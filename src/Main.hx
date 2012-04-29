@@ -69,12 +69,12 @@ class Main extends Sprite
 		tf2.outlineColor = 0xff0000;
 		tf2.setWidth(600);
 		tf2.alignment = PxTextAlign.CENTER;
-		tf2.multiLine = true;
 		tf2.lineSpacing = 5;
 		tf2.fontScale = 2.5;
 		tf2.padding = 5;
 		tf2.letterSpacing = 20;
 		tf2.autoUpperCase = true;
+		tf2.multiLine = true;
 	//	tf2.scaleX = tf2.scaleY = 2.5;
 	//	tf2.setAlpha(0.5);
 		
