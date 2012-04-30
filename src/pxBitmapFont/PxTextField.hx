@@ -9,7 +9,7 @@ import pxBitmapFont.PxBitmapFont;
  * Renders a text field.
  * @author Johan Peitz
  */
-class PxTextFieldComponent extends Sprite 
+class PxTextField extends Sprite 
 {
 	private var _font:PxBitmapFont;
 	private var _text:String;
@@ -27,6 +27,7 @@ class PxTextFieldComponent extends Sprite
 	private var _letterSpacing:Int;
 	private var _fontScale:Float;
 	private var _autoUpperCase:Bool;
+	private var _fixedWidth:Bool;
 	
 	private var _pendingTextChange:Bool;
 	private var _fieldWidth:Int;
@@ -69,6 +70,7 @@ class PxTextFieldComponent extends Sprite
 		_letterSpacing = 0;
 		_fontScale = 1;
 		_autoUpperCase = false;
+		_fixedWidth = true;
 		_alpha = 1;
 		
 		super();
@@ -174,42 +176,50 @@ class PxTextFieldComponent extends Sprite
 		var i:Int = -1;
 		while (++i < lines.length) 
 		{
-			lineComplete = false;
-			var words:Array<String> = lines[i].split(" ");
-			if (words.length > 0) 
+			if (_fixedWidth)
 			{
-				var wordPos:Int = 0;
-				var txt:String = "";
-				while (!lineComplete) 
+				lineComplete = false;
+				var words:Array<String> = lines[i].split(" ");
+				if (words.length > 0) 
 				{
-					var changed:Bool = false;
-					
-					var currentRow:String = txt + words[wordPos] + " ";
-					
-					if (_multiLine) 
+					var wordPos:Int = 0;
+					var txt:String = "";
+					while (!lineComplete) 
 					{
-						if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+						var changed:Bool = false;
+						
+						var currentRow:String = txt + words[wordPos] + " ";
+						
+						if (_multiLine) 
 						{
-							rows.push(txt.substr(0, txt.length - 1));
-							txt = "";
-							changed = true;
+							if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+							{
+								rows.push(txt.substr(0, txt.length - 1));
+								txt = "";
+								changed = true;
+							}
 						}
-					}
-					
-					txt += words[wordPos] + " ";
-					wordPos++;
-					
-					if (wordPos >= words.length) 
-					{
-						if (!changed) 
+						
+						txt += words[wordPos] + " ";
+						wordPos++;
+						
+						if (wordPos >= words.length) 
 						{
-							var subText:String = txt.substr(0, txt.length - 1);
-							calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(subText, _letterSpacing, _fontScale)));
-							rows.push(subText);
+							if (!changed) 
+							{
+								var subText:String = txt.substr(0, txt.length - 1);
+								calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(subText, _letterSpacing, _fontScale)));
+								rows.push(subText);
+							}
+							lineComplete = true;
 						}
-						lineComplete = true;
 					}
 				}
+			}
+			else
+			{
+				calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lines[i], _letterSpacing, _fontScale)));
+				rows.push(lines[i]);
 			}
 		}
 		
@@ -259,11 +269,25 @@ class PxTextFieldComponent extends Sprite
 			var oy:Int = 0;
 			if (alignment == PxTextAlign.CENTER) 
 			{
-				ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
+				if (_fixedWidth)
+				{
+					ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
+				}
+				else
+				{
+					ox = Math.floor((finalWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
+				}
 			}
 			if (alignment == PxTextAlign.RIGHT) 
 			{
-				ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
+				if (_fixedWidth)
+				{
+					ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
+				}
+				else
+				{
+					ox = finalWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale)) - 2 * padding;
+				}
 			}
 			if (_outline) 
 			{
@@ -681,6 +705,24 @@ class PxTextFieldComponent extends Sprite
 			}
 		}
 		return _autoUpperCase;
+	}
+	
+	public var fixedWidth(get_fixedWidth, set_fixedWidth):Bool;
+	
+	private function get_fixedWidth():Bool 
+	{
+		return _fixedWidth;
+	}
+	
+	private function set_fixedWidth(value:Bool):Bool 
+	{
+		if (_fixedWidth != value)
+		{
+			_fixedWidth = value;
+			_pendingTextChange = true;
+			update();
+		}
+		return _fixedWidth;
 	}
 	
 	private function updateGlyphs(?textGlyphs:Bool = false, ?shadowGlyphs:Bool = false, ?outlineGlyphs:Bool = false):Void
