@@ -27,6 +27,7 @@ class PxTextField extends Sprite
 	private var _letterSpacing:Int;
 	private var _fontScale:Float;
 	private var _autoUpperCase:Bool;
+	private var _wordWrap:Bool;
 	private var _fixedWidth:Bool;
 	
 	private var _pendingTextChange:Bool;
@@ -71,6 +72,7 @@ class PxTextField extends Sprite
 		_fontScale = 1;
 		_autoUpperCase = false;
 		_fixedWidth = true;
+		_wordWrap = true;
 		_alpha = 1;
 		
 		super();
@@ -174,34 +176,95 @@ class PxTextField extends Sprite
 		// get words
 		var lines:Array<String> = _text.split("\n");
 		var i:Int = -1;
+		var j:Int = -1;
+		if (!_multiLine)
+		{
+			while (++j < lines.length)
+			{
+				if (lines[j].split(" ").length > 0)
+				{
+					lines = [lines[0]];
+					break;
+				}
+			}
+		}
+		
+		var wordLength:Int;
+		var word:String;
+		var tempStr:String;
 		while (++i < lines.length) 
 		{
 			if (_fixedWidth)
 			{
 				lineComplete = false;
 				var words:Array<String> = lines[i].split(" ");
+				
 				if (words.length > 0) 
 				{
 					var wordPos:Int = 0;
 					var txt:String = "";
 					while (!lineComplete) 
 					{
+						word = words[wordPos];
+						var currentRow:String = txt + word + " ";
 						var changed:Bool = false;
 						
-						var currentRow:String = txt + words[wordPos] + " ";
-						
-						if (_multiLine) 
+						if (_wordWrap)
 						{
 							if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 							{
 								rows.push(txt.substr(0, txt.length - 1));
 								txt = "";
+								if (_multiLine)
+								{
+									words.splice(0, wordPos);
+								}
+								else
+								{
+									words.splice(0, words.length);
+								}
+								wordPos = 0;
 								changed = true;
 							}
+							else
+							{
+								txt += word + " ";
+								wordPos++;
+							}
+							
 						}
-						
-						txt += words[wordPos] + " ";
-						wordPos++;
+						else
+						{
+							if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+							{
+								j = 0;
+								tempStr = "";
+								wordLength = word.length;
+								while (j < wordLength)
+								{
+									currentRow = txt + word.charAt(j);
+									if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+									{
+										rows.push(txt.substr(0, txt.length - 1));
+										txt = "";
+										word = "";
+										wordPos = words.length;
+										j = wordLength;
+										changed = true;
+									}
+									else
+									{
+										txt += word.charAt(j);
+									}
+									j++;
+								}
+							}
+							else
+							{
+								txt += word + " ";
+								wordPos++;
+							}
+						}
 						
 						if (wordPos >= words.length) 
 						{
@@ -705,6 +768,24 @@ class PxTextField extends Sprite
 			}
 		}
 		return _autoUpperCase;
+	}
+	
+	public var wordWrap(get_wordWrap, set_wordWrap):Bool;
+	
+	private function get_wordWrap():Bool 
+	{
+		return _wordWrap;
+	}
+	
+	private function set_wordWrap(value:Bool):Bool 
+	{
+		if (_wordWrap != value)
+		{
+			_wordWrap = value;
+			_pendingTextChange = true;
+			update();
+		}
+		return _wordWrap;
 	}
 	
 	public var fixedWidth(get_fixedWidth, set_fixedWidth):Bool;
