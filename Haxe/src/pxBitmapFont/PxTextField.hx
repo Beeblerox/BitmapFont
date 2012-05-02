@@ -99,6 +99,9 @@ class PxTextField extends Sprite
 		#else
 		_drawData = [];
 		#end
+		
+		_pendingTextChange = true;
+		update();
 	}
 	
 	/**
@@ -156,10 +159,6 @@ class PxTextField extends Sprite
 		{
 			return;
 		}
-		if (_text == "")
-		{
-			return;
-		}
 		
 		var calcFieldWidth:Int = _fieldWidth;
 		var rows:Array<String> = [];
@@ -179,14 +178,7 @@ class PxTextField extends Sprite
 		var j:Int = -1;
 		if (!_multiLine)
 		{
-			while (++j < lines.length)
-			{
-				if (lines[j].split(" ").length > 0)
-				{
-					lines = [lines[0]];
-					break;
-				}
-			}
+			lines = [lines[0]];
 		}
 		
 		var wordLength:Int;
@@ -277,6 +269,10 @@ class PxTextField extends Sprite
 							lineComplete = true;
 						}
 					}
+				}
+				else
+				{
+					rows.push("");
 				}
 			}
 			else
@@ -695,7 +691,7 @@ class PxTextField extends Sprite
 	{
 		_alpha = pAlpha;
 		#if (flash || js)
-		_bitmap.alpha = _alpha;
+		this.alpha = _alpha;
 		#else
 		_pendingTextChange = true;
 		update();

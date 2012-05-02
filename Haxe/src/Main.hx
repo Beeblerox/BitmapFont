@@ -69,16 +69,16 @@ class Main extends Sprite
 		tf2.outlineColor = 0xff0000;
 		tf2.setWidth(610);
 		tf2.alignment = PxTextAlign.RIGHT;
-		tf2.lineSpacing = 5;
+	//	tf2.lineSpacing = 5;
 		tf2.fontScale = 2.5;
 		tf2.padding = 20;
 		tf2.letterSpacing = 25;
 		tf2.autoUpperCase = true;
-		tf2.multiLine = false;
+		tf2.multiLine = true;
 		tf2.wordWrap = false;
-		tf2.fixedWidth = true;
+		tf2.fixedWidth = false;
 	//	tf2.scaleX = tf2.scaleY = 2.5;
-	//	tf2.setAlpha(0.5);
+		tf2.setAlpha(0.2);
 		
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 	}
@@ -86,7 +86,7 @@ class Main extends Sprite
 	private function onMouseMove(e:MouseEvent):Void 
 	{
 		tf.text = "mouseX = " + Math.floor(e.localX);
-		tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n" + "mouseY = " + Math.floor(e.localY);
+		tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n\n" + "mouseY = " + Math.floor(e.localY);
 	}
 	
 }

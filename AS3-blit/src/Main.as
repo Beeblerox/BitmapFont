@@ -73,7 +73,8 @@ package
 			tf2.autoUpperCase = true;
 			tf2.multiLine = true;
 			tf2.wordWrap = true;
-			tf2.fixedWidth = true;
+			tf2.fixedWidth = false;
+			tf2.text = "Hello!" + "\n\n" + "world!";
 		//	tf2.scaleX = tf2.scaleY = 2.5;
 		//	tf2.alpha(0.5);
 			
@@ -83,7 +84,7 @@ package
 		private function onMouseMove(e:MouseEvent):void 
 		{
 			tf.text = "mouseX = " + Math.floor(e.localX);
-			tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n" + "mouseY = " + Math.floor(e.localY);
+		//	tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n" + "mouseY = " + Math.floor(e.localY);
 		}
 		
 	}

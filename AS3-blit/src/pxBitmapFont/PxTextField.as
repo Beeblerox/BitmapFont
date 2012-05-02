@@ -34,8 +34,6 @@ package pxBitmapFont
 		private var _fieldWidth:int;
 		private var _multiLine:Boolean;
 		
-		private var _alpha:Number;
-		
 		public var bitmapData:BitmapData;
 		private var _bitmap:Bitmap;
 		
@@ -69,7 +67,6 @@ package pxBitmapFont
 			_autoUpperCase = false;
 			_fixedWidth = true;
 			_wordWrap = true;
-			_alpha = 1;
 			
 			super();
 			
@@ -91,6 +88,9 @@ package pxBitmapFont
 			bitmapData = new BitmapData(1, 1, true);
 			_bitmap = new Bitmap(bitmapData);
 			this.addChild(_bitmap);
+			
+			_pendingTextChange = true;
+			update();
 		}
 		
 		/**
@@ -143,10 +143,6 @@ package pxBitmapFont
 			{
 				return;
 			}
-			if (_text == "")
-			{
-				return;
-			}
 			
 			var calcFieldWidth:int = _fieldWidth;
 			var rows:Array = [];
@@ -162,14 +158,7 @@ package pxBitmapFont
 			var j:int = -1;
 			if (!_multiLine)
 			{
-				while (++j < lines.length)
-				{
-					if (lines[j].split(" ").length > 0)
-					{
-						lines = [lines[0]];
-						break;
-					}
-				}
+				lines = [lines[0]];
 			}
 			
 			var wordLength:int;
@@ -260,6 +249,10 @@ package pxBitmapFont
 								lineComplete = true;
 							}
 						}
+					}
+					else
+					{
+						rows.push("");
 					}
 				}
 				else
