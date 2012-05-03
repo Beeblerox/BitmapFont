@@ -185,7 +185,15 @@ package pxBitmapFont
 							{
 								if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 								{
-									rows.push(txt.substr(0, txt.length - 1));
+									if (txt == "")
+									{
+										words.splice(0, 1);
+									}
+									else
+									{
+										rows.push(txt.substr(0, txt.length - 1));
+									}
+									
 									txt = "";
 									if (_multiLine)
 									{
@@ -263,7 +271,7 @@ package pxBitmapFont
 			}
 			
 			var finalWidth:int = calcFieldWidth + _padding * 2 + (_outline ? 2 : 0);
-			var finalHeight:int = Math.floor(_padding * 2 + Math.max(1, (rows.length * fontHeight + (_shadow ? 1 : 0)) + (_outline ? 2 : 0))) + _lineSpacing * (rows.length - 1);
+			var finalHeight:int = Math.floor(_padding * 2 + Math.max(1, (rows.length * fontHeight + (_shadow ? 1 : 0)) + (_outline ? 2 : 0))) + ((rows.length >= 1) ? _lineSpacing * (rows.length - 1) : 0);
 			
 			if (bitmapData != null) 
 			{
