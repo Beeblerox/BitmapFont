@@ -21,6 +21,8 @@ package pxBitmapFont
 		private var _outlineColor:int;
 		private var _shadow:Boolean;
 		private var _shadowColor:int;
+		private var _background:Boolean;
+		private var _backgroundColor:int;
 		private var _alignment:int;
 		private var _padding:int;
 		
@@ -51,6 +53,8 @@ package pxBitmapFont
 			_outlineColor = 0x0;
 			_shadow = false;
 			_shadowColor = 0x0;
+			_background = false;
+			_backgroundColor = 0xFFFFFF;
 			_alignment = PxTextAlign.LEFT;
 			_padding = 0;
 			_pendingTextChange = false;
@@ -281,11 +285,11 @@ package pxBitmapFont
 			
 			if (_pixels == null) 
 			{
-				_pixels = new BitmapData(finalWidth, finalHeight, true, 0x00000000);
+				_pixels = new BitmapData(finalWidth, finalHeight, !_background, _backgroundColor);
 			} 
 			else 
 			{
-				_pixels.fillRect(_pixels.rect, 0x00000000);
+				_pixels.fillRect(_pixels.rect, _backgroundColor);
 			}
 			_pixels.lock();
 			
@@ -341,6 +345,45 @@ package pxBitmapFont
 			pixels = _pixels;
 			
 			_pendingTextChange = false;
+		}
+		
+		/**
+		 * Specifies whether the text field should have a filled background.
+		 */
+		public function get background():Boolean
+		{
+			return _background;
+		}
+		
+		public function set background(value:Boolean):void 
+		{
+			if (_background != value)
+			{
+				_background = value;
+				_pendingTextChange = true;
+				update();
+			}
+		}
+		
+		/**
+		 * Specifies the color of the text field background.
+		 */
+		public function get backgroundColor():int
+		{
+			return _backgroundColor;
+		}
+		
+		public function set backgroundColor(value:int):void
+		{
+			if (_backgroundColor != value)
+			{
+				_backgroundColor = value;
+				if (_background)
+				{
+					_pendingTextChange = true;
+					update();
+				}
+			}
 		}
 		
 		/**

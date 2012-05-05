@@ -31,13 +31,16 @@ package
 			var font:PxBitmapFont = new PxBitmapFont((new FontImage()).bitmapData, fontString);
 			
 			tf = new FlxBitmapTextField(font);
+			tf.background = true;
+			tf.backgroundColor = 0x00ffff;
 			tf.textColor = 0xff0000;
 			tf.text = "Hello!\nand this is multiline";
 			tf.shadow = true;
 			tf.shadowColor = 0xffffff;
 			
 			tf.y = 100;
-			tf.setWidth(FlxG.width);
+			tf.wordWrap = false;
+			tf.setWidth(FlxG.width / 3);
 			tf.alignment = PxTextAlign.CENTER;
 			tf.multiLine = true;
 			tf.lineSpacing = 5;
@@ -46,7 +49,6 @@ package
 			tf.alpha = 0.5;
 			//tf.angle = 45;
 			add(tf);
-			tf.wordWrap = true;
 			
 			FlxG.mouse.show();
 			Mouse.hide();
