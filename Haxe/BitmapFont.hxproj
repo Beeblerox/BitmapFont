@@ -49,7 +49,7 @@
   <options>
     <option showHiddenPaths="False" />
     <option testMovie="Custom" />
-    <option testMovieCommand="windows" />
+    <option testMovieCommand="" />
   </options>
   <!-- Plugin storage -->
   <storage />
