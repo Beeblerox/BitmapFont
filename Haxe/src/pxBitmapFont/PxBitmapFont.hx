@@ -387,14 +387,12 @@ class PxBitmapFont
 		symbol.yoffset = pOffsetY;
 		symbol.xadvance = pAdvanceX;
 		
-		trace("pAdvanceX = " + pAdvanceX);
-		
 		_glyphs.set(pCharID, symbol);
 		_num_letters++;
 		
-		if (Math.floor(pRect.height) > _maxHeight) 
+		if ((Math.floor(pRect.height) + pOffsetY) > _maxHeight) 
 		{
-			_maxHeight = Math.floor(pRect.height);
+			_maxHeight = Math.floor(pRect.height) + pOffsetY;
 		}
 	}
 	#end
