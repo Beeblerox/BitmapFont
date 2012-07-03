@@ -27,19 +27,28 @@ package pxBitmapFont
 		
 		private var _point:Point;
 		
+		private var _isPixelizer:Boolean;
+		
 		/**
 		 * Creates a new bitmap font using specified bitmap data and letter input.
 		 * @param	pBitmapData	The bitmap data to copy letters from.
 		 * @param	pLetters	String of letters available in the bitmap data.
 		 */
-		public function PxBitmapFont(pBitmapData:BitmapData, pLetters:String) 
+		public function PxBitmapFont() 
 		{
 			_maxHeight = 0;
 			_point = new Point();
 			_matrix = new Matrix();
 			_colorTransform = new ColorTransform();
-			
 			_glyphs = [];
+			
+			_isPixelizer = false;
+		}
+		
+		public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
+		{
+			reset();
+			
 			_glyphString = pLetters;
 			
 			// fill array with nulls
@@ -66,6 +75,31 @@ package pxBitmapFont
 					setGlyph(_glyphString.charCodeAt(letterID), bd);
 				}
 			}
+			
+			_isPixelizer = true;
+			
+			return this;
+		}
+		
+		// TODO: implement this
+		public function loadAngelCode(pBitmapData:BitmapData, pXMLData:XML):PxBitmapFont
+		{
+			reset();
+			
+			
+			
+			_isPixelizer = false;
+			
+			return this;
+		}
+		
+		// TODO: implement this
+		private function reset():void
+		{
+			dispose();
+			_maxHeight = 0;
+			_glyphs = [];
+			_glyphString = "";
 		}
 		
 		public function grabFontData(pBitmapData:BitmapData, pRects:Array):void
@@ -120,7 +154,6 @@ package pxBitmapFont
 				cy += (rowHeight + 1);
 			}
 		}
-	
 		
 		public function getPreparedGlyphs(pScale:Number, pColor:int):Array
 		{
@@ -167,24 +200,34 @@ package pxBitmapFont
 		 * Serializes font data to cryptic bit string.
 		 * @return	Cryptic string with font as bits.
 		 */
+		// TODO: implement this method for angelCode font format also
 		public function getFontData():String 
 		{
 			var output:String = "";
-			for (var i:int = 0; i < _glyphString.length; i++) 
+			
+			if (_isPixelizer == true)
 			{
-				var charCode:int = _glyphString.charCodeAt(i);
-				var glyph:BitmapData = _glyphs[charCode];
-				output += _glyphString.substr(i, 1);
-				output += glyph.width;
-				output += glyph.height;
-				for (var py:int = 0; py < glyph.height; py++) 
+				for (var i:int = 0; i < _glyphString.length; i++) 
 				{
-					for (var px:int = 0; px < glyph.width; px++) 
+					var charCode:int = _glyphString.charCodeAt(i);
+					var glyph:BitmapData = _glyphs[charCode];
+					output += _glyphString.substr(i, 1);
+					output += glyph.width;
+					output += glyph.height;
+					for (var py:int = 0; py < glyph.height; py++) 
 					{
-						output += (glyph.getPixel32(px, py) != 0 ? "1":"0");
+						for (var px:int = 0; px < glyph.width; px++) 
+						{
+							output += (glyph.getPixel32(px, py) != 0 ? "1":"0");
+						}
 					}
 				}
 			}
+			else
+			{
+				
+			}
+			
 			return output;
 		}
 		

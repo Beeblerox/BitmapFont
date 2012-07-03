@@ -48,7 +48,7 @@ package pxBitmapFont
 				letterPos++;
 			}
 			
-			PxBitmapFont.store("default", new PxBitmapFont(bd, letters));
+			PxBitmapFont.store("default", new PxBitmapFont().loadPixelizer(bd, letters));
 			bd.dispose();
 		}
 	}

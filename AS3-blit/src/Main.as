@@ -3,6 +3,7 @@ package
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.text.TextField;
 	
 	import pxBitmapFont.PxBitmapFont;
 	import pxBitmapFont.PxTextAlign;
@@ -16,7 +17,12 @@ package
 	{
 		
 		[Embed(source = "../assets/fontData10pt.png")]
-		private var FontImage:Class;
+		private var PixelizerFontImage:Class;
+		
+		[Embed(source = "../assets/1.fnt", mimeType = "application/octet-stream")]
+		private var angelCodeFontData:Class;
+		[Embed(source = "../assets/1_0.png")]
+		private var angelCodeFontImage:Class;
 		
 		private var fontString:String;
 		
@@ -35,8 +41,15 @@ package
 			// entry point
 			
 			fontString = " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\";
-			var font:PxBitmapFont = new PxBitmapFont((new FontImage()).bitmapData, fontString);
-		
+			var font:PxBitmapFont = new PxBitmapFont().loadPixelizer((new PixelizerFontImage()).bitmapData, fontString);
+			
+			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new angelCodeFontImage()).bitmapData, XML(new angelCodeFontData()));
+			
+			var text:TextField = new TextField();
+			addChild(text);
+			text.text = String(new angelCodeFontData());
+			
+		/*
 			tf = new PxTextField();
 			addChild(tf);
 			tf.color = 0x0000ff;
@@ -45,7 +58,7 @@ package
 			tf.text = "Hello World!\nand this is\nmultiline!!!";
 			tf.shadow = true;
 		//	tf.outlineColor = 0x0000ff;
-			tf.width = 250;
+			tf.width = 400;
 			tf.alignment = PxTextAlign.CENTER;
 			tf.multiLine = true;
 			tf.lineSpacing = 5;
@@ -58,13 +71,12 @@ package
 			tf2.y = 100;
 			addChild(tf2);
 			tf2.color = 0x0000ff;
-			tf2.background = true;
+		//	tf2.background = true;
 			tf2.backgroundColor = 0x00ff00;
-			tf2.text = "Hello World!\nand this is\nmultiline!!!";
 			tf2.shadow = true;
 		//	tf2.shadowColor = 0xff0000;
 			tf2.outlineColor = 0xff0000;
-			tf2.width = 610;
+			tf2.width = 20;
 			tf2.alignment = PxTextAlign.RIGHT;
 			tf2.lineSpacing = 5;
 			tf2.fontScale = 2.5;
@@ -75,15 +87,16 @@ package
 			tf2.wordWrap = true;
 			tf2.fixedWidth = false;
 			tf2.text = "Hello!" + "\n\n" + "world!";
+			tf2.visible = true;
 		//	tf2.scaleX = tf2.scaleY = 2.5;
 		//	tf2.alpha(0.5);
-			
+		*/	
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		}
 		
 		private function onMouseMove(e:MouseEvent):void 
 		{
-			tf.text = "mouseX = " + Math.floor(e.localX);
+		//	tf.text = "mouseX = " + Math.floor(e.localX);
 		//	tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n" + "mouseY = " + Math.floor(e.localY);
 		}
 		
