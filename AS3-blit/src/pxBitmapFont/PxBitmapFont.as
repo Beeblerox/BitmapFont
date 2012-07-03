@@ -45,6 +45,12 @@ package pxBitmapFont
 			_isPixelizer = false;
 		}
 		
+		/**
+		 * Loads font data in Pixelizer's format
+		 * @param	pBitmapData	font source image
+		 * @param	pLetters	all letters contained in this font
+		 * @return				this font
+		 */
 		public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
 		{
 			reset();
@@ -80,7 +86,12 @@ package pxBitmapFont
 			return this;
 		}
 		
-		// TODO: implement this
+		/**
+		 * Loads font data in AngelCode's format
+		 * @param	pBitmapData	font image source
+		 * @param	pXMLData	font data in XML format
+		 * @return				this font
+		 */
 		public function loadAngelCode(pBitmapData:BitmapData, pXMLData:XML):PxBitmapFont
 		{
 			reset();
@@ -121,7 +132,9 @@ package pxBitmapFont
 			return this;
 		}
 		
-		// TODO: implement this
+		/**
+		 * internal function. Resets current font
+		 */
 		private function reset():void
 		{
 			dispose();
@@ -228,38 +241,29 @@ package pxBitmapFont
 		 * Serializes font data to cryptic bit string.
 		 * @return	Cryptic string with font as bits.
 		 */
-		// TODO: implement this method for angelCode font format also
 		public function getFontData():String 
 		{
 			var output:String = "";
 			
-			if (_isPixelizer == true)
+			for (var i:int = 0; i < _glyphString.length; i++) 
 			{
-				for (var i:int = 0; i < _glyphString.length; i++) 
+				var charCode:int = _glyphString.charCodeAt(i);
+				var glyph:BitmapData = _glyphs[charCode];
+				output += _glyphString.substr(i, 1);
+				output += glyph.width;
+				output += glyph.height;
+				for (var py:int = 0; py < glyph.height; py++) 
 				{
-					var charCode:int = _glyphString.charCodeAt(i);
-					var glyph:BitmapData = _glyphs[charCode];
-					output += _glyphString.substr(i, 1);
-					output += glyph.width;
-					output += glyph.height;
-					for (var py:int = 0; py < glyph.height; py++) 
+					for (var px:int = 0; px < glyph.width; px++) 
 					{
-						for (var px:int = 0; px < glyph.width; px++) 
-						{
-							output += (glyph.getPixel32(px, py) != 0 ? "1":"0");
-						}
+						output += (glyph.getPixel32(px, py) != 0 ? "1":"0");
 					}
 				}
-			}
-			else
-			{
-				
 			}
 			
 			return output;
 		}
 		
-		// TODO: support angelCode font format
 		private function setGlyph(pCharID:int, pBitmapData:BitmapData):void 
 		{
 			if (_glyphs[pCharID] != null)
@@ -309,7 +313,6 @@ package pxBitmapFont
 		 * @param	pFontScale	"size" of the font
 		 * @return	Width in pixels.
 		 */
-		// TODO: angelCode font format support
 		public function getTextWidth(pText:String, pLetterSpacing:int = 0, pFontScale:Number = 1.0):int 
 		{
 			var w:int = 0;
