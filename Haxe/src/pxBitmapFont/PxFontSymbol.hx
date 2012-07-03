@@ -27,24 +27,9 @@ class PxFontSymbol
 	 */
 	public var tileID:Int;
 	
-	/**
-	 * image of symbol
-	 */
-	public var bitmapData:BitmapData;
-	
 	public function new() 
 	{
 		
-	}
-	
-	public function dispose():PxFontSymbol
-	{
-		if (bitmapData != null)
-		{
-			bitmapData.dispose();
-		}
-		bitmapData = null;
-		return this;
 	}
 	
 }

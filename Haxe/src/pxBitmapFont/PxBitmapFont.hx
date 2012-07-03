@@ -25,11 +25,10 @@ class PxBitmapFont
 	#if (flash || js)
 	private var _glyphs:Array<BitmapData>;
 	#else
-	private var _glyphs:IntHash<Int>;
+	private var _glyphs:IntHash<PxFontSymbol>;
 	private var _num_letters:Int;
 	private var _tileSheet:Tilesheet;
 	private static var _flags = Tilesheet.TILE_SCALE | Tilesheet.TILE_ROTATION | Tilesheet.TILE_ALPHA | Tilesheet.TILE_RGB;
-	private var _glyphWidthData:Array<Int>;
 	#end
 	private var _glyphString:String;
 	private var _maxHeight:Int;
@@ -55,8 +54,7 @@ class PxBitmapFont
 		_colorTransform = new ColorTransform();
 		_glyphs = [];
 		#else
-		_glyphWidthData = [];
-		_glyphs = new IntHash<Int>();
+		_glyphs = new IntHash<PxFontSymbol>();
 		_num_letters = 0;
 		#end
 	}
@@ -94,7 +92,7 @@ class PxBitmapFont
 				// store glyph
 				setGlyph(_glyphString.charCodeAt(letterID), bd);
 				#else
-				setGlyph(_glyphString.charCodeAt(letterID), currRect, letterID);
+				setGlyph(_glyphString.charCodeAt(letterID), currRect, letterID, 0, 0, Math.floor(currRect.width));
 				#end
 			}
 		}
@@ -122,7 +120,7 @@ class PxBitmapFont
 			var charCode:Int;
 			
 			#if (cpp || neko)
-			_tileSheet = new Tilesheet(result);
+			_tileSheet = new Tilesheet(pBitmapData);
 			#end
 			
 			var chars:Xml = null;
@@ -166,7 +164,7 @@ class PxBitmapFont
 						// store glyph
 						setGlyph(charCode, bd);
 						#else
-						setGlyph(charCode, rect, letterID);
+						setGlyph(charCode, rect, letterID, Math.floor(point.x), Math.floor(point.y), Std.parseInt(node.get("xadvance")));
 						#end
 						
 						letterID++;
@@ -188,7 +186,7 @@ class PxBitmapFont
 		#if (flash || js)
 		_glyphs = [];
 		#else
-		_glyphs = new IntHash<Int>();
+		_glyphs = new IntHash<PxFontSymbol>();
 		#end
 		_glyphString = "";
 	}
@@ -379,12 +377,20 @@ class PxBitmapFont
 		}
 	}
 	#else
-	private function setGlyph(pCharID:Int, pRect:Rectangle, pGlyphID:Int):Void 
+	private function setGlyph(pCharID:Int, pRect:Rectangle, pGlyphID:Int, ?pOffsetX:Int = 0, ?pOffsetY:Int = 0, ?pAdvanceX:Int = 0):Void 
 	{
 		_tileSheet.addTileRect(pRect);
-		_glyphs.set(pCharID, pGlyphID);
+		
+		var symbol:PxFontSymbol = new PxFontSymbol();
+		symbol.tileID = pGlyphID;
+		symbol.xoffset = pOffsetX;
+		symbol.yoffset = pOffsetY;
+		symbol.xadvance = pAdvanceX;
+		
+		trace("pAdvanceX = " + pAdvanceX);
+		
+		_glyphs.set(pCharID, symbol);
 		_num_letters++;
-		_glyphWidthData[pCharID] = Math.floor(pRect.width);
 		
 		if (Math.floor(pRect.height) > _maxHeight) 
 		{
@@ -414,7 +420,7 @@ class PxBitmapFont
 		#if (flash || js)
 		var glyph:BitmapData;
 		#else
-		var glyph:Int;
+		var glyph:PxFontSymbol;
 		var glyphWidth:Int;
 		#end
 		
@@ -433,20 +439,20 @@ class PxBitmapFont
 				pBitmapData.copyPixels(glyph, glyph.rect, _point, null, null, true);
 				_point.x += glyph.width + pLetterSpacing;
 				#else
-				glyphWidth = _glyphWidthData[charCode];
+				glyphWidth = glyph.xadvance;
 				var red:Float = (pColor >> 16 & 0xFF) / 255;
 				var green:Float = (pColor >> 8 & 0xFF) / 255;
 				var blue:Float = (pColor & 0xFF) / 255;
 				// x, y, tile_ID, scale, rotation, red, green, blue, alpha
-				drawData.push(_point.x);	// x
-				drawData.push(_point.y);	// y
-				drawData.push(glyph);		// tile_ID
-				drawData.push(pScale);		// scale
-				drawData.push(0);			// rotation
+				drawData.push(_point.x + glyph.xoffset * pScale);			// x
+				drawData.push(_point.y + glyph.yoffset * pScale);			// y
+				drawData.push(glyph.tileID);								// tile_ID
+				drawData.push(pScale);										// scale
+				drawData.push(0);											// rotation
 				drawData.push(red);			
 				drawData.push(green);
 				drawData.push(blue);
-				drawData.push(pAlpha);		// alpha
+				drawData.push(pAlpha);										// alpha
 				_point.x += glyphWidth * pScale + pLetterSpacing;
 				#end
 			}
@@ -488,11 +494,10 @@ class PxBitmapFont
 				w += glyph.width;
 			}
 			#else
-			var glyphWidth:Int = _glyphWidthData[charCode];
 			if (_glyphs.exists(charCode)) 
 			{
 				
-				w += glyphWidth;
+				w += _glyphs.get(charCode).xadvance;
 			}
 			#end
 		}
