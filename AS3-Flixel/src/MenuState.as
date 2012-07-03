@@ -20,6 +20,11 @@ package
 		[Embed(source = "../assets/fontData10pt.png")]
 		private var FontImage:Class;
 		
+		[Embed(source = "../assets/1.fnt", mimeType = "application/octet-stream")]
+		private var angelCodeFontData:Class;
+		[Embed(source = "../assets/1_0.png")]
+		private var angelCodeFontImage:Class;
+		
 		private var tf:FlxBitmapTextField;
 		
 		override public function create():void 
@@ -28,10 +33,12 @@ package
 			FlxG.flashFramerate = 30;
 			
 			var fontString:String = " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\";
-			var font:PxBitmapFont = new PxBitmapFont((new FontImage()).bitmapData, fontString);
+			var font:PxBitmapFont = new PxBitmapFont().loadPixelizer((new FontImage()).bitmapData, fontString);
 			
-			tf = new FlxBitmapTextField(font);
-			tf.background = true;
+			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new angelCodeFontImage()).bitmapData, XML(new angelCodeFontData()));
+			
+			tf = new FlxBitmapTextField(font2);
+			//tf.background = true;
 			tf.backgroundColor = 0x00ffff;
 			tf.textColor = 0xff0000;
 			tf.text = "Hello!\nand this is multiline";
@@ -40,7 +47,7 @@ package
 			
 			tf.y = 100;
 			tf.wordWrap = false;
-			tf.setWidth(FlxG.width / 3);
+			tf.setWidth(FlxG.width);
 			tf.alignment = PxTextAlign.CENTER;
 			tf.multiLine = true;
 			tf.lineSpacing = 5;

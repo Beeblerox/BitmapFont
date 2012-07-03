@@ -32,14 +32,24 @@ package pxBitmapFont
 		 * @param	pBitmapData	The bitmap data to copy letters from.
 		 * @param	pLetters	String of letters available in the bitmap data.
 		 */
-		public function PxBitmapFont(pBitmapData:BitmapData, pLetters:String) 
+		public function PxBitmapFont() 
 		{
 			_maxHeight = 0;
 			_point = new Point();
 			_matrix = new Matrix();
 			_colorTransform = new ColorTransform();
-			
 			_glyphs = [];
+		}
+		
+		/**
+		 * Loads font data in Pixelizer's format
+		 * @param	pBitmapData	font source image
+		 * @param	pLetters	all letters contained in this font
+		 * @return				this font
+		 */
+		public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
+		{
+			reset();
 			_glyphString = pLetters;
 			
 			// fill array with nulls
@@ -66,6 +76,64 @@ package pxBitmapFont
 					setGlyph(_glyphString.charCodeAt(letterID), bd);
 				}
 			}
+			
+			return this;
+		}
+		
+		/**
+		 * Loads font data in AngelCode's format
+		 * @param	pBitmapData	font image source
+		 * @param	pXMLData	font data in XML format
+		 * @return				this font
+		 */
+		public function loadAngelCode(pBitmapData:BitmapData, pXMLData:XML):PxBitmapFont
+		{
+			reset();
+			
+			if (pBitmapData != null) 
+			{
+				_glyphString = "";
+				
+				var chars:XMLList = pXMLData.chars[0].char;
+				var numLetters:int = chars.length();
+				var rect:Rectangle = new Rectangle();
+				var point:Point = new Point();
+				var char:XML;
+				var bd:BitmapData;
+				
+				for (var i:int = 0; i < numLetters; i++)
+				{
+					char = chars[i];
+					_glyphString += String.fromCharCode(char.@id);
+					
+					// create glyph
+					bd = new BitmapData(int(char.@xadvance), int(char.@height) + int(char.@yoffset), true, 0x0);
+					rect.x = int(char.@x);
+					rect.y = int(char.@y);
+					rect.width = int(char.@width);
+					rect.height = int(char.@height);
+					
+					point.x = int(char.@xoffset);
+					point.y = int(char.@yoffset);
+					bd.copyPixels(pBitmapData, rect, point, null, null, true);
+					
+					// store glyph
+					setGlyph(char.@id, bd);
+				}
+			}
+			
+			return this;
+		}
+		
+		/**
+		 * internal function. Resets current font
+		 */
+		private function reset():void
+		{
+			dispose();
+			_maxHeight = 0;
+			_glyphs = [];
+			_glyphString = "";
 		}
 		
 		public function grabFontData(pBitmapData:BitmapData, pRects:Array):void
