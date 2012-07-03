@@ -40,6 +40,10 @@ class Main extends Sprite
 		
 		var font:PxBitmapFont = new PxBitmapFont().loadPixelizer(Assets.getBitmapData("assets/fontData10pt.png"), " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\");
 		
+		var textBytes = Assets.getText("assets/1.fnt");
+		var XMLData = Xml.parse(textBytes);
+		var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode(Assets.getBitmapData("assets/1_0.png"), XMLData);
+		
 		tf = new PxTextField();
 		addChild(tf);
 		tf.color = 0x0000ff;
@@ -57,7 +61,7 @@ class Main extends Sprite
 		tf.scaleX = tf.scaleY = 2.5;
 	//	tf.setAlpha(0.5);
 		
-		tf2 = new PxTextField(font);
+		tf2 = new PxTextField(font2);
 	//	tf2.y = 100;
 		addChild(tf2);
 		tf2.color = 0x0000ff;

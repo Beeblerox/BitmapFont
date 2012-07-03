@@ -103,6 +103,82 @@ class PxBitmapFont
 	}
 	
 	/**
+	 * Loads font data in AngelCode's format
+	 * @param	pBitmapData	font image source
+	 * @param	pXMLData	font data in XML format
+	 * @return				this font
+	 */
+	public function loadAngelCode(pBitmapData:BitmapData, pXMLData:Xml):PxBitmapFont
+	{
+		reset();
+		
+		if (pBitmapData != null) 
+		{
+			_glyphString = "";
+			var rect:Rectangle = new Rectangle();
+			var point:Point = new Point();
+			var bd:BitmapData;
+			var letterID:Int = 0;
+			var charCode:Int;
+			
+			#if (cpp || neko)
+			_tileSheet = new Tilesheet(result);
+			#end
+			
+			var chars:Xml = null;
+			for (node in pXMLData.elements())
+			{
+				if (node.nodeName == "font")
+				{
+					for (nodeChild in node.elements())
+					{
+						if (nodeChild.nodeName == "chars")
+						{
+							chars = nodeChild;
+							break;
+						}
+					}
+				}
+			}
+			
+			if (chars != null)
+			{
+				for (node in chars.elements())
+				{
+					if (node.nodeName == "char")
+					{
+						rect.x = Std.parseInt(node.get("x"));
+						rect.y = Std.parseInt(node.get("y"));
+						rect.width = Std.parseInt(node.get("width"));
+						rect.height = Std.parseInt(node.get("height"));
+						
+						point.x = Std.parseInt(node.get("xoffset"));
+						point.y = Std.parseInt(node.get("yoffset"));
+						
+						charCode = Std.parseInt(node.get("id"));
+						_glyphString += String.fromCharCode(charCode);
+						
+						// create glyph
+						#if (flash || js)
+						bd = new BitmapData(Std.parseInt(node.get("xadvance")), Std.parseInt(node.get("height")) + Std.parseInt(node.get("yoffset")), true, 0x0);
+						bd.copyPixels(pBitmapData, rect, point, null, null, true);
+						
+						// store glyph
+						setGlyph(charCode, bd);
+						#else
+						setGlyph(charCode, rect, letterID);
+						#end
+						
+						letterID++;
+					}
+				}
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
 	 * internal function. Resets current font
 	 */
 	private function reset():Void
