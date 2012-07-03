@@ -48,6 +48,7 @@ package pxBitmapFont
 		public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
 		{
 			reset();
+			_isPixelizer = true;
 			
 			_glyphString = pLetters;
 			
@@ -76,8 +77,6 @@ package pxBitmapFont
 				}
 			}
 			
-			_isPixelizer = true;
-			
 			return this;
 		}
 		
@@ -85,10 +84,39 @@ package pxBitmapFont
 		public function loadAngelCode(pBitmapData:BitmapData, pXMLData:XML):PxBitmapFont
 		{
 			reset();
-			
-			
-			
 			_isPixelizer = false;
+			
+			if (pBitmapData != null) 
+			{
+				_glyphString = "";
+				
+				var chars:XMLList = pXMLData.chars[0].char;
+				var numLetters:int = chars.length();
+				var rect:Rectangle = new Rectangle();
+				var point:Point = new Point();
+				var char:XML;
+				var bd:BitmapData;
+				
+				for (var i:int = 0; i < numLetters; i++)
+				{
+					char = chars[i];
+					_glyphString += String.fromCharCode(char.@id);
+					
+					// create glyph
+					bd = new BitmapData(int(char.@xadvance), int(char.@height) + int(char.@yoffset), true, 0x0);
+					rect.x = int(char.@x);
+					rect.y = int(char.@y);
+					rect.width = int(char.@width);
+					rect.height = int(char.@height);
+					
+					point.x = int(char.@xoffset);
+					point.y = int(char.@yoffset);
+					bd.copyPixels(pBitmapData, rect, point, null, null, true);
+					
+					// store glyph
+					setGlyph(char.@id, bd);
+				}
+			}
 			
 			return this;
 		}
@@ -184,13 +212,13 @@ package pxBitmapFont
 		 */
 		public function dispose():void 
 		{
-			var bd:BitmapData;
+			var glyph:BitmapData;
 			for (var i:int = 0; i < _glyphs.length; i++) 
 			{
-				bd = _glyphs[i];
-				if (bd != null) 
+				glyph = _glyphs[i];
+				if (glyph != null) 
 				{
-					_glyphs[i].dispose();
+					glyph.dispose();
 				}
 			}
 			_glyphs = null;
@@ -231,9 +259,10 @@ package pxBitmapFont
 			return output;
 		}
 		
+		// TODO: support angelCode font format
 		private function setGlyph(pCharID:int, pBitmapData:BitmapData):void 
 		{
-			if (_glyphs[pCharID] != null) 
+			if (_glyphs[pCharID] != null)
 			{
 				_glyphs[pCharID].dispose();
 			}
@@ -280,6 +309,7 @@ package pxBitmapFont
 		 * @param	pFontScale	"size" of the font
 		 * @return	Width in pixels.
 		 */
+		// TODO: angelCode font format support
 		public function getTextWidth(pText:String, pLetterSpacing:int = 0, pFontScale:Number = 1.0):int 
 		{
 			var w:int = 0;

@@ -45,11 +45,6 @@ package
 			
 			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new angelCodeFontImage()).bitmapData, XML(new angelCodeFontData()));
 			
-			var text:TextField = new TextField();
-			addChild(text);
-			text.text = String(new angelCodeFontData());
-			
-		/*
 			tf = new PxTextField();
 			addChild(tf);
 			tf.color = 0x0000ff;
@@ -67,7 +62,7 @@ package
 			tf.scaleX = tf.scaleY = 2.5;
 		//	tf.alpha(0.5);
 			
-			tf2 = new PxTextField(font);
+			tf2 = new PxTextField(font2);
 			tf2.y = 100;
 			addChild(tf2);
 			tf2.color = 0x0000ff;
@@ -90,7 +85,7 @@ package
 			tf2.visible = true;
 		//	tf2.scaleX = tf2.scaleY = 2.5;
 		//	tf2.alpha(0.5);
-		*/	
+			
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		}
 		
