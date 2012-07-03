@@ -27,8 +27,6 @@ package pxBitmapFont
 		
 		private var _point:Point;
 		
-		private var _isPixelizer:Boolean;
-		
 		/**
 		 * Creates a new bitmap font using specified bitmap data and letter input.
 		 * @param	pBitmapData	The bitmap data to copy letters from.
@@ -41,8 +39,6 @@ package pxBitmapFont
 			_matrix = new Matrix();
 			_colorTransform = new ColorTransform();
 			_glyphs = [];
-			
-			_isPixelizer = false;
 		}
 		
 		/**
@@ -54,8 +50,6 @@ package pxBitmapFont
 		public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
 		{
 			reset();
-			_isPixelizer = true;
-			
 			_glyphString = pLetters;
 			
 			// fill array with nulls
@@ -95,7 +89,6 @@ package pxBitmapFont
 		public function loadAngelCode(pBitmapData:BitmapData, pXMLData:XML):PxBitmapFont
 		{
 			reset();
-			_isPixelizer = false;
 			
 			if (pBitmapData != null) 
 			{
