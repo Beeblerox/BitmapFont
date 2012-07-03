@@ -38,7 +38,7 @@ class Main extends Sprite
 	{
 		super();
 		
-		var font:PxBitmapFont = new PxBitmapFont(Assets.getBitmapData("assets/fontData10pt.png"), " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\");
+		var font:PxBitmapFont = new PxBitmapFont().loadPixelizer(Assets.getBitmapData("assets/fontData10pt.png"), " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\");
 		
 		tf = new PxTextField();
 		addChild(tf);
@@ -58,10 +58,10 @@ class Main extends Sprite
 	//	tf.setAlpha(0.5);
 		
 		tf2 = new PxTextField(font);
-		tf2.y = 100;
+	//	tf2.y = 100;
 		addChild(tf2);
 		tf2.color = 0x0000ff;
-		tf2.background = true;
+	//	tf2.background = true;
 		tf2.backgroundColor = 0x00ff00;
 		tf2.text = "Hello World!\nand this is\nmultiline!!!";
 		tf2.shadow = true;
@@ -85,8 +85,8 @@ class Main extends Sprite
 	
 	private function onMouseMove(e:MouseEvent):Void 
 	{
-		tf.text = "mouseX = " + Math.floor(e.localX);
-		tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n\n" + "mouseY = " + Math.floor(e.localY);
+	//	tf.text = "mouseX = " + Math.floor(e.localX);
+	//	tf2.text = "mouseY = " + Math.floor(e.localY) + "; mouseX = " + Math.floor(e.localX) + ";\n" + "mouseY = " + Math.floor(e.localY) + "\n\n" + "mouseY = " + Math.floor(e.localY);
 	}
 	
 }

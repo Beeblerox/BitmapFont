@@ -46,7 +46,7 @@ class PxBitmapFont
 	 * @param	pBitmapData	The bitmap data to copy letters from.
 	 * @param	pLetters	String of letters available in the bitmap data.
 	 */
-	public function new(pBitmapData:BitmapData, pLetters:String) 
+	public function new() 
 	{
 		_maxHeight = 0;
 		_point = new Point();
@@ -59,16 +59,18 @@ class PxBitmapFont
 		_glyphs = new IntHash<Int>();
 		_num_letters = 0;
 		#end
-		
+	}
+	
+	/**
+	 * Loads font data in Pixelizer's format
+	 * @param	pBitmapData	font source image
+	 * @param	pLetters	all letters contained in this font
+	 * @return				this font
+	 */
+	public function loadPixelizer(pBitmapData:BitmapData, pLetters:String):PxBitmapFont
+	{
+		reset();
 		_glyphString = pLetters;
-		
-		#if (flash || js)
-		// fill array with nulls
-		for (i in 0...(256)) 
-		{
-			_glyphs.push(null);
-		}
-		#end
 		
 		if (pBitmapData != null) 
 		{
@@ -96,6 +98,23 @@ class PxBitmapFont
 				#end
 			}
 		}
+		
+		return this;
+	}
+	
+	/**
+	 * internal function. Resets current font
+	 */
+	private function reset():Void
+	{
+		dispose();
+		_maxHeight = 0;
+		#if (flash || js)
+		_glyphs = [];
+		#else
+		_glyphs = new IntHash<Int>();
+		#end
+		_glyphString = "";
 	}
 	
 	public function prepareBitmapData(pBitmapData:BitmapData, pRects:Array<Rectangle>):BitmapData
@@ -236,6 +255,7 @@ class PxBitmapFont
 		}
 		#else
 		_tileSheet = null;
+		_num_letters = 0;
 		#end
 		_glyphs = null;
 	}
