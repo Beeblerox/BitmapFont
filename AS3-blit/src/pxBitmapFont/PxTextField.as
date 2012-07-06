@@ -14,6 +14,7 @@ package pxBitmapFont
 		private var _font:PxBitmapFont;
 		private var _text:String;
 		private var _color:int;
+		private var _useColor:Boolean;
 		private var _outline:Boolean;
 		private var _outlineColor:int;
 		private var _shadow:Boolean;
@@ -49,6 +50,7 @@ package pxBitmapFont
 		{
 			_text = "";
 			_color = 0x0;
+			_useColor = true;
 			_outline = false;
 			_outlineColor = 0x0;
 			_shadow = false;
@@ -473,6 +475,25 @@ package pxBitmapFont
 		}
 		
 		/**
+		 * Do we need to use color transformation of text
+		 */
+		public function get useColor():Boolean 
+		{
+			return _useColor;
+		}
+		
+		public function set useColor(value:Boolean):void 
+		{
+			if (_useColor != value)
+			{
+				_useColor = value;
+				updateGlyphs(true, false, false);
+				_pendingTextChange = true;
+				update();
+			}
+		}
+		
+		/**
 		 * Sets the width of the text field. If the text does not fit, it will spread on multiple lines.
 		 */
 		override public function set width(pWidth:Number):void 
@@ -691,7 +712,7 @@ package pxBitmapFont
 			if (textGlyphs)
 			{
 				clearPreparedGlyphs(_preparedTextGlyphs);
-				_preparedTextGlyphs = _font.getPreparedGlyphs(_fontScale, _color);
+				_preparedTextGlyphs = _font.getPreparedGlyphs(_fontScale, _color, _useColor);
 			}
 			
 			if (shadowGlyphs)

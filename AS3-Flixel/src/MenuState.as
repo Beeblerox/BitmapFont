@@ -25,6 +25,11 @@ package
 		[Embed(source = "../assets/1_0.png")]
 		private var angelCodeFontImage:Class;
 		
+		[Embed(source = "../assets/NavTitle.png")]
+		private var navTitleImage:Class;
+		[Embed(source="../assets/NavTitle.fnt", mimeType="application/octet-stream")]
+		private var navTitleData:Class;
+		
 		private var tf:FlxBitmapTextField;
 		
 		override public function create():void 
@@ -35,12 +40,12 @@ package
 			var fontString:String = " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\";
 			var font:PxBitmapFont = new PxBitmapFont().loadPixelizer((new FontImage()).bitmapData, fontString);
 			
-			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new angelCodeFontImage()).bitmapData, XML(new angelCodeFontData()));
+			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new navTitleImage()).bitmapData, XML(new navTitleData()));
 			
 			tf = new FlxBitmapTextField(font2);
 			//tf.background = true;
 			tf.backgroundColor = 0x00ffff;
-			tf.textColor = 0xff0000;
+			tf.useTextColor = false;
 			tf.text = "Hello!\nand this is multiline";
 			tf.shadow = true;
 			tf.shadowColor = 0xffffff;
@@ -51,7 +56,7 @@ package
 			tf.alignment = PxTextAlign.CENTER;
 			tf.multiLine = true;
 			tf.lineSpacing = 5;
-			tf.fontScale = 2.5;
+			//tf.fontScale = 2.5;
 			tf.padding = 5;
 			tf.alpha = 0.5;
 			//tf.angle = 45;

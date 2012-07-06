@@ -118,6 +118,7 @@ class PxBitmapFont
 			var bd:BitmapData;
 			var letterID:Int = 0;
 			var charCode:Int;
+			var charString:String;
 			
 			#if (cpp || neko)
 			_tileSheet = new Tilesheet(pBitmapData);
@@ -154,17 +155,33 @@ class PxBitmapFont
 						point.y = Std.parseInt(node.get("yoffset"));
 						
 						charCode = Std.parseInt(node.get("id"));
-						_glyphString += String.fromCharCode(charCode);
+						charString = String.fromCharCode(charCode);
+						_glyphString += charString;
 						
 						// create glyph
 						#if (flash || js)
-						bd = new BitmapData(Std.parseInt(node.get("xadvance")), Std.parseInt(node.get("height")) + Std.parseInt(node.get("yoffset")), true, 0x0);
+						bd = null;
+						if (charString != " " && charString != "")
+						{
+							bd = new BitmapData(Std.parseInt(node.get("xadvance")), Std.parseInt(node.get("height")) + Std.parseInt(node.get("yoffset")), true, 0x0);
+						}
+						else
+						{
+							bd = new BitmapData(Std.parseInt(node.get("xadvance")), 1, true, 0x0);
+						}
 						bd.copyPixels(pBitmapData, rect, point, null, null, true);
 						
 						// store glyph
 						setGlyph(charCode, bd);
 						#else
-						setGlyph(charCode, rect, letterID, Math.floor(point.x), Math.floor(point.y), Std.parseInt(node.get("xadvance")));
+						if (charString != " " && charString != "")
+						{
+							setGlyph(charCode, rect, letterID, Math.floor(point.x), Math.floor(point.y), Std.parseInt(node.get("xadvance")));
+						}
+						else
+						{
+							setGlyph(charCode, rect, letterID, Math.floor(point.x), 1, Std.parseInt(node.get("xadvance")));
+						}
 						#end
 						
 						letterID++;
@@ -287,7 +304,7 @@ class PxBitmapFont
 	}
 	
 	#if (flash || js)
-	public function getPreparedGlyphs(pScale:Float, pColor:Int):Array<BitmapData>
+	public function getPreparedGlyphs(pScale:Float, pColor:Int, ?pUseColorTransform:Bool = true):Array<BitmapData>
 	{
 		var result:Array<BitmapData> = [];
 		
@@ -303,7 +320,14 @@ class PxBitmapFont
 			if (glyph != null)
 			{
 				preparedGlyph = new BitmapData(Math.floor(glyph.width * pScale), Math.floor(glyph.height * pScale), true, 0x00000000);
-				preparedGlyph.draw(glyph,  _matrix, _colorTransform);
+				if (pUseColorTransform)
+				{
+					preparedGlyph.draw(glyph,  _matrix, _colorTransform);
+				}
+				else
+				{
+					preparedGlyph.draw(glyph,  _matrix);
+				}
 				result[i] = preparedGlyph;
 			}
 		}
@@ -410,7 +434,7 @@ class PxBitmapFont
 	#elseif js
 	public function render(pBitmapData:BitmapData, pFontData:Array<BitmapData>, pText:String, pColor:Int, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, ?pAngle:Float = 0):Void 
 	#else
-	public function render(drawData:Array<Float>, pText:String, pColor:Int, pAlpha:Float, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, pScale:Float, ?pAngle:Float = 0):Void 
+	public function render(drawData:Array<Float>, pText:String, pColor:Int, pAlpha:Float, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, pScale:Float, ?pAngle:Float = 0, ?pUseColorTransform:Bool = true):Void 
 	#end
 	{
 		_point.x = pOffsetX;
@@ -447,9 +471,18 @@ class PxBitmapFont
 				drawData.push(glyph.tileID);								// tile_ID
 				drawData.push(pScale);										// scale
 				drawData.push(0);											// rotation
-				drawData.push(red);			
-				drawData.push(green);
-				drawData.push(blue);
+				if (pUseColorTransform)
+				{
+					drawData.push(red);			
+					drawData.push(green);
+					drawData.push(blue);
+				}
+				else
+				{
+					drawData.push(1);			
+					drawData.push(1);
+					drawData.push(1);
+				}
 				drawData.push(pAlpha);										// alpha
 				_point.x += glyphWidth * pScale + pLetterSpacing;
 				#end

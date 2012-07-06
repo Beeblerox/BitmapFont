@@ -24,6 +24,11 @@ package
 		[Embed(source = "../assets/1_0.png")]
 		private var angelCodeFontImage:Class;
 		
+		[Embed(source = "../assets/NavTitle.png")]
+		private var navTitleImage:Class;
+		[Embed(source="../assets/NavTitle.fnt", mimeType="application/octet-stream")]
+		private var navTitleData:Class;
+		
 		private var fontString:String;
 		
 		private var tf:PxTextField;
@@ -43,7 +48,7 @@ package
 			fontString = " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\";
 			var font:PxBitmapFont = new PxBitmapFont().loadPixelizer((new PixelizerFontImage()).bitmapData, fontString);
 			
-			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new angelCodeFontImage()).bitmapData, XML(new angelCodeFontData()));
+			var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode((new navTitleImage()).bitmapData, XML(new navTitleData()));
 			
 			tf = new PxTextField();
 			addChild(tf);
@@ -63,19 +68,19 @@ package
 		//	tf.alpha(0.5);
 			
 			tf2 = new PxTextField(font2);
-			tf2.y = 100;
+			tf2.y = 200;
 			addChild(tf2);
-			tf2.color = 0x0000ff;
-		//	tf2.background = true;
+			tf2.useColor = false;
+			tf2.background = true;
 			tf2.backgroundColor = 0x00ff00;
 			tf2.shadow = true;
 		//	tf2.shadowColor = 0xff0000;
 			tf2.outlineColor = 0xff0000;
 			tf2.width = 20;
 			tf2.alignment = PxTextAlign.RIGHT;
-			tf2.lineSpacing = 5;
-			tf2.fontScale = 2.5;
-			tf2.padding = 20;
+			tf2.lineSpacing = 0;
+		//	tf2.fontScale = 2.5;
+			tf2.padding = 0;
 			tf2.letterSpacing = 25;
 			tf2.autoUpperCase = true;
 			tf2.multiLine = true;
@@ -83,6 +88,9 @@ package
 			tf2.fixedWidth = false;
 			tf2.text = "Hello!" + "\n\n" + "world!";
 			tf2.visible = true;
+			
+			
+			
 		//	tf2.scaleX = tf2.scaleY = 2.5;
 		//	tf2.alpha(0.5);
 			

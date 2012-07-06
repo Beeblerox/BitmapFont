@@ -100,14 +100,24 @@ package pxBitmapFont
 				var point:Point = new Point();
 				var char:XML;
 				var bd:BitmapData;
+				var charString:String;
 				
 				for (var i:int = 0; i < numLetters; i++)
 				{
 					char = chars[i];
-					_glyphString += String.fromCharCode(char.@id);
+					charString = String.fromCharCode(char.@id);
+					_glyphString += charString;
 					
 					// create glyph
-					bd = new BitmapData(int(char.@xadvance), int(char.@height) + int(char.@yoffset), true, 0x0);
+					if (charString != " " && charString != "")
+					{
+						bd = new BitmapData(int(char.@xadvance), int(char.@height) + int(char.@yoffset), true, 0x0);
+					}
+					else
+					{
+						bd = new BitmapData(int(char.@xadvance), 1, true, 0x0);
+					}
+					
 					rect.x = int(char.@x);
 					rect.y = int(char.@y);
 					rect.width = int(char.@width);
@@ -189,7 +199,7 @@ package pxBitmapFont
 			}
 		}
 		
-		public function getPreparedGlyphs(pScale:Number, pColor:int):Array
+		public function getPreparedGlyphs(pScale:Number, pColor:int, pUseColorTranform:Boolean = true):Array
 		{
 			var result:Array = [];
 			
@@ -205,7 +215,14 @@ package pxBitmapFont
 				if (glyph != null)
 				{
 					preparedGlyph = new BitmapData(Math.floor(glyph.width * pScale), Math.floor(glyph.height * pScale), true, 0x00000000);
-					preparedGlyph.draw(glyph,  _matrix, _colorTransform);
+					if (pUseColorTranform)
+					{
+						preparedGlyph.draw(glyph,  _matrix, _colorTransform);
+					}
+					else
+					{
+						preparedGlyph.draw(glyph,  _matrix);
+					}
 					result[i] = preparedGlyph;
 				}
 			}

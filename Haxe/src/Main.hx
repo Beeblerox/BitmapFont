@@ -40,9 +40,9 @@ class Main extends Sprite
 		
 		var font:PxBitmapFont = new PxBitmapFont().loadPixelizer(Assets.getBitmapData("assets/fontData10pt.png"), " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\");
 		
-		var textBytes = Assets.getText("assets/1.fnt");
+		var textBytes = Assets.getText("assets/NavTitle.fnt");
 		var XMLData = Xml.parse(textBytes);
-		var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode(Assets.getBitmapData("assets/1_0.png"), XMLData);
+		var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode(Assets.getBitmapData("assets/NavTitle.png"), XMLData);
 		
 		tf = new PxTextField();
 		addChild(tf);
@@ -65,6 +65,7 @@ class Main extends Sprite
 	//	tf2.y = 100;
 		addChild(tf2);
 		tf2.color = 0x0000ff;
+		tf2.useColor = false;
 	//	tf2.background = true;
 		tf2.backgroundColor = 0x00ff00;
 		tf2.text = "Hello World!\nand this is\nmultiline!!!";
@@ -82,7 +83,7 @@ class Main extends Sprite
 		tf2.wordWrap = false;
 		tf2.fixedWidth = false;
 	//	tf2.scaleX = tf2.scaleY = 2.5;
-		tf2.setAlpha(0.2);
+	//	tf2.setAlpha(0.2);
 		
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 	}

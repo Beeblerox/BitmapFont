@@ -14,6 +14,7 @@ class PxTextField extends Sprite
 	private var _font:PxBitmapFont;
 	private var _text:String;
 	private var _color:Int;
+	private var _useColor:Bool;
 	private var _outline:Bool;
 	private var _outlineColor:Int;
 	private var _shadow:Bool;
@@ -53,8 +54,11 @@ class PxTextField extends Sprite
 	 */
 	public function new(?pFont:PxBitmapFont = null) 
 	{
+		super();
+		
 		_text = "";
 		_color = 0x0;
+		_useColor = true;
 		_outline = false;
 		_outlineColor = 0x0;
 		_shadow = false;
@@ -74,8 +78,6 @@ class PxTextField extends Sprite
 		_fixedWidth = true;
 		_wordWrap = true;
 		_alpha = 1;
-		
-		super();
 		
 		if (pFont == null)
 		{
@@ -383,7 +385,7 @@ class PxTextField extends Sprite
 			#if (flash || js)
 			_font.render(bitmapData, _preparedTextGlyphs, t, _color, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
 			#else
-			_font.render(_drawData, t, _color, _alpha, ox + _padding, oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+			_font.render(_drawData, t, _color, _alpha, ox + _padding, oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale, _useColor);
 			#end
 			row++;
 		}
@@ -538,6 +540,25 @@ class PxTextField extends Sprite
 		if (_color != value)
 		{
 			_color = value;
+			updateGlyphs(true, false, false);
+			_pendingTextChange = true;
+			update();
+		}
+		return value;
+	}
+	
+	public var useColor(get_useColor, set_useColor):Bool;
+	
+	private function get_useColor():Bool 
+	{
+		return _useColor;
+	}
+	
+	private function set_useColor(value:Bool):Bool 
+	{
+		if (_useColor != value)
+		{
+			_useColor = value;
 			updateGlyphs(true, false, false);
 			_pendingTextChange = true;
 			update();
@@ -816,7 +837,7 @@ class PxTextField extends Sprite
 		if (textGlyphs)
 		{
 			clearPreparedGlyphs(_preparedTextGlyphs);
-			_preparedTextGlyphs = _font.getPreparedGlyphs(_fontScale, _color);
+			_preparedTextGlyphs = _font.getPreparedGlyphs(_fontScale, _color, _useColor);
 		}
 		
 		if (shadowGlyphs)
