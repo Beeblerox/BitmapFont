@@ -437,11 +437,11 @@ class PxBitmapFont
 	 * @param	pOffsetY	Y position of thext output.
 	 */
 	#if flash 
-	public function render(pBitmapData:BitmapData, pFontData:Array<BitmapData>, pText:String, pColor:UInt, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, ?pAngle:Float = 0):Void 
+	public function render(pBitmapData:BitmapData, pFontData:Array<BitmapData>, pText:String, pColor:UInt, pOffsetX:Float, pOffsetY:Float, pLetterSpacing:Int, ?pAngle:Float = 0):Void 
 	#elseif js
-	public function render(pBitmapData:BitmapData, pFontData:Array<BitmapData>, pText:String, pColor:Int, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, ?pAngle:Float = 0):Void 
+	public function render(pBitmapData:BitmapData, pFontData:Array<BitmapData>, pText:String, pColor:Int, pOffsetX:Float, pOffsetY:Float, pLetterSpacing:Int, ?pAngle:Float = 0):Void 
 	#else
-	public function render(drawData:Array<Float>, pText:String, pColor:Int, pAlpha:Float, pOffsetX:Int, pOffsetY:Int, pLetterSpacing:Int, pScale:Float, ?pAngle:Float = 0, ?pUseColorTransform:Bool = true):Void 
+	public function render(drawData:Array<Float>, pText:String, pColor:Int, pAlpha:Float, pOffsetX:Float, pOffsetY:Float, pLetterSpacing:Int, pScale:Float, ?pAngle:Float = 0, ?pUseColorTransform:Bool = true):Void 
 	#end
 	{
 		_point.x = pOffsetX;

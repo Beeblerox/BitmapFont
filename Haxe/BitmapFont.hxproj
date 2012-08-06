@@ -16,14 +16,16 @@
   <!-- Other classes to be compiled into your SWF -->
   <classpaths>
     <class path="src" />
+    <class path="bin/cpp/windows/haxe" />
+    <class path="bin/cpp/haxe" />
   </classpaths>
   <!-- Build options -->
   <build>
-    <option directives="" />
+    <option directives="nme_install_tool&#xA;desktop&#xA;windows" />
     <option flashStrict="False" />
-    <option mainClass="Main" />
+    <option mainClass="ApplicationMain" />
     <option enabledebug="True" />
-    <option additional="" />
+    <option additional="--connect 6000&#xA;--remap flash:nme" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

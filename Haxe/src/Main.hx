@@ -44,22 +44,26 @@ class Main extends Sprite
 		var XMLData = Xml.parse(textBytes);
 		var font2:PxBitmapFont = new PxBitmapFont().loadAngelCode(Assets.getBitmapData("assets/NavTitle.png"), XMLData);
 		
-		tf = new PxTextField();
-		addChild(tf);
+		tf = new PxTextField(font2);
+	//	addChild(tf); // I don't add this component to display list as you can see
+		tf.text = "Hello World!\nand this is\nmultiline!!!";
 		tf.color = 0x0000ff;
 		tf.background = true;
+		tf.fixedWidth = false;
+		tf.multiLine = true;
 		tf.backgroundColor = 0x00ff00;
-		tf.text = "Hello World!\nand this is\nmultiline!!!";
 		tf.shadow = true;
-	//	tf.outlineColor = 0x0000ff;
 		tf.setWidth(250);
 		tf.alignment = PxTextAlign.CENTER;
-		tf.multiLine = true;
 		tf.lineSpacing = 5;
 		tf.fontScale = 2.5;
 		tf.padding = 5;
 		tf.scaleX = tf.scaleY = 2.5;
 	//	tf.setAlpha(0.5);
+		
+		tf.drawText(this.graphics, 100, 200);
+		
+	/*	
 		
 		tf2 = new PxTextField(font2);
 	//	tf2.y = 100;
@@ -83,7 +87,7 @@ class Main extends Sprite
 		tf2.wordWrap = false;
 		tf2.fixedWidth = false;
 	//	tf2.scaleX = tf2.scaleY = 2.5;
-	//	tf2.setAlpha(0.2);
+	//	tf2.setAlpha(0.2);*/
 		
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 	}

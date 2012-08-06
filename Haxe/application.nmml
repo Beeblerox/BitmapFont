@@ -5,7 +5,7 @@
 		version="1.0.0" company="Zaphod" />
 		
 	<!-- output -->
-	<window width="800" height="480" fps="60" background="0xFFFFFF" orientation="landscape" resizable="true" />
+	<window width="800" height="600" fps="60" background="0xFFFFFF" orientation="landscape" resizable="true" />
 	<set name="BUILD_DIR" value="bin" />
 	
 	<!-- classpath, haxe libs -->

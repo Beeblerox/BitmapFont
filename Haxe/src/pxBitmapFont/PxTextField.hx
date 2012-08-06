@@ -2,7 +2,9 @@ package pxBitmapFont;
 
 import nme.display.Bitmap;
 import nme.display.BitmapData;
+import nme.display.Graphics;
 import nme.display.Sprite;
+import nme.geom.Matrix;
 import pxBitmapFont.PxBitmapFont;
 
 /**
@@ -44,6 +46,8 @@ class PxTextField extends Sprite
 	private var _preparedTextGlyphs:Array<BitmapData>;
 	private var _preparedShadowGlyphs:Array<BitmapData>;
 	private var _preparedOutlineGlyphs:Array<BitmapData>;
+	
+	private var _mtx:Matrix;
 	#else
 	private var _drawData:Array<Float>;
 	#end
@@ -94,10 +98,11 @@ class PxTextField extends Sprite
 		
 		#if (flash || js)
 		updateGlyphs(true, _shadow, _outline);
-		
 		bitmapData = new BitmapData(1, 1, true);
 		_bitmap = new Bitmap(bitmapData);
 		this.addChild(_bitmap);
+		
+		_mtx = new Matrix();
 		#else
 		_drawData = [];
 		#end
@@ -121,6 +126,8 @@ class PxTextField extends Sprite
 		clearPreparedGlyphs(_preparedTextGlyphs);
 		clearPreparedGlyphs(_preparedShadowGlyphs);
 		clearPreparedGlyphs(_preparedOutlineGlyphs);
+		
+		_mtx = null;
 		#end
 	}
 	
@@ -152,10 +159,22 @@ class PxTextField extends Sprite
 		return _text;
 	}
 	
+	public function drawText(Graph:Graphics, ?X:Float = 0, ?Y:Float = 0):Void
+	{
+		updateBitmapData(Graph, X, Y);
+		#if (flash || js)
+		_mtx.identity();
+		_mtx.translate(X, Y);
+		Graph.beginBitmapFill(bitmapData, _mtx);
+		Graph.drawRect(X, Y, bitmapData.width, bitmapData.height);
+		Graph.endFill();
+		#end
+	}
+	
 	/**
 	 * Internal method for updating the view of the text component
 	 */
-	private function updateBitmapData():Void 
+	private function updateBitmapData(?Graph:Graphics = null, ?X:Float = 0, ?Y:Float = 0):Void 
 	{
 		if (_font == null)
 		{
@@ -319,12 +338,14 @@ class PxTextField extends Sprite
 		}
 		bitmapData.lock();
 		#else
-		graphics.clear();
+		var renderGraphics:Graphics = (Graph != null) ? Graph : this.graphics;
+		
+		renderGraphics.clear();
 		if (_background == true)
 		{
-			graphics.beginFill(_backgroundColor, _alpha);
-			graphics.drawRect(0, 0, finalWidth, finalHeight);
-			graphics.endFill();
+			renderGraphics.beginFill(_backgroundColor, _alpha);
+			renderGraphics.drawRect(X, Y, finalWidth, finalHeight);
+			renderGraphics.endFill();
 		}
 		_drawData.splice(0, _drawData.length);
 		#end
@@ -367,7 +388,7 @@ class PxTextField extends Sprite
 						#if (flash || js)
 						_font.render(bitmapData, _preparedOutlineGlyphs, t, _outlineColor, px + ox + _padding, py + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
 						#else
-						_font.render(_drawData, t, _outlineColor, _alpha, px + ox + _padding, py + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+						_font.render(_drawData, t, _outlineColor, _alpha, X + px + ox + _padding, Y + py + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
 						#end
 					}
 				}
@@ -379,20 +400,20 @@ class PxTextField extends Sprite
 				#if (flash || js)
 				_font.render(bitmapData, _preparedShadowGlyphs, t, _shadowColor, 1 + ox + _padding, 1 + oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
 				#else
-				_font.render(_drawData, t, _shadowColor, _alpha, 1 + ox + _padding, 1 + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+				_font.render(_drawData, t, _shadowColor, _alpha, X + 1 + ox + _padding, Y + 1 + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
 				#end
 			}
 			#if (flash || js)
 			_font.render(bitmapData, _preparedTextGlyphs, t, _color, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
 			#else
-			_font.render(_drawData, t, _color, _alpha, ox + _padding, oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale, _useColor);
+			_font.render(_drawData, t, _color, _alpha, X + ox + _padding, Y + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale, _useColor);
 			#end
 			row++;
 		}
 		#if (flash || js)
 		bitmapData.unlock();
 		#else
-		_font.drawText(this.graphics, _drawData);
+		_font.drawText(renderGraphics, _drawData);
 		#end
 		
 		_pendingTextChange = false;
