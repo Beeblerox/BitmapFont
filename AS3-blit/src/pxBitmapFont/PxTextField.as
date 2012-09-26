@@ -127,6 +127,7 @@ package pxBitmapFont
 		{
 			if (_numSpacesInTab != num && num > 0)
 			{
+				_numSpacesInTab = num;
 				_tabSpaces = "";
 				for (var i:int = 0; i < num; i++)
 				{
@@ -186,7 +187,6 @@ package pxBitmapFont
 			var wordLength:int;
 			var word:String;
 			var tempStr:String;
-			
 			while (++i < lines.length) 
 			{
 				if (_fixedWidth)
@@ -729,10 +729,8 @@ package pxBitmapFont
 			if (_autoUpperCase != value)
 			{
 				_autoUpperCase = value;
-				if (_autoUpperCase)
-				{
-					text = _text.toUpperCase();
-				}
+				_pendingTextChange = true;
+				update();
 			}
 		}
 		

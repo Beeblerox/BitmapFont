@@ -678,10 +678,6 @@ package pxBitmapFont
 			if (_autoUpperCase != value)
 			{
 				_autoUpperCase = value;
-				if (_autoUpperCase)
-				{
-					text = _text.toUpperCase();
-				}
 				_pendingTextChange = true;
 			}
 		}
@@ -724,6 +720,11 @@ package pxBitmapFont
 			if (_numSpacesInTab != value && value > 0)
 			{
 				_numSpacesInTab = value;
+				_tabSpaces = "";
+				for (var i:int = 0; i < num; i++)
+				{
+					_tabSpaces += " ";
+				}
 				_pendingTextChange = true;
 			}
 		}

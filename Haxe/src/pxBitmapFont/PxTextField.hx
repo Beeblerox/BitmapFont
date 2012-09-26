@@ -149,7 +149,13 @@ class PxTextField extends Sprite
 		if (_numSpacesInTab != value && value > 0)
 		{
 			_numSpacesInTab = value;
+			_tabSpaces = "";
+			for (i in 0...num)
+			{
+				_tabSpaces += " ";
+			}
 			_pendingTextChange = true;
+			update();
 		}
 		return value;
 	}
@@ -862,10 +868,8 @@ class PxTextField extends Sprite
 		if (_autoUpperCase != value)
 		{
 			_autoUpperCase = value;
-			if (_autoUpperCase)
-			{
-				text = _text.toUpperCase();
-			}
+			_pendingTextChange = true;
+			update();
 		}
 		return _autoUpperCase;
 	}
