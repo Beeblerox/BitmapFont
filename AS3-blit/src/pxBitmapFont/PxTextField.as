@@ -8,8 +8,9 @@ package pxBitmapFont
 	/**
 	 * Renders a text field.
 	 * @author Johan Peitz
+	 * @author Zaphod
 	 */
-	public class PxTextField extends Sprite 
+	public class PxTextField extends Sprite
 	{
 		private var _font:PxBitmapFont;
 		private var _text:String;
@@ -30,6 +31,9 @@ package pxBitmapFont
 		private var _autoUpperCase:Boolean;
 		private var _wordWrap:Boolean;
 		private var _fixedWidth:Boolean;
+		
+		private var _numSpacesInTab:int;
+		private var _tabSpaces:String;
 		
 		private var _pendingTextChange:Boolean;
 		private var _fieldWidth:int;
@@ -69,6 +73,9 @@ package pxBitmapFont
 			_autoUpperCase = false;
 			_fixedWidth = true;
 			_wordWrap = true;
+			
+			_numSpacesInTab = 4;
+			_tabSpaces = "    ";
 			
 			super();
 			
@@ -111,6 +118,25 @@ package pxBitmapFont
 			clearPreparedGlyphs(_preparedOutlineGlyphs);
 		}
 		
+		public function get numSpacesInTab():int
+		{
+			return _numSpacesInTab;
+		}
+		
+		public function set numSpacesInTab(num:int):void
+		{
+			if (_numSpacesInTab != num && num > 0)
+			{
+				_tabSpaces = "";
+				for (var i:int = 0; i < num; i++)
+				{
+					_tabSpaces += " ";
+				}
+				_pendingTextChange = true;
+				update();
+			}
+		}
+		
 		/**
 		 * Text to display.
 		 */
@@ -121,16 +147,9 @@ package pxBitmapFont
 		
 		public function set text(pText:String):void 
 		{
-			var tmp:String = pText;
-			tmp = tmp.split("\\n").join("\n");
-			if (tmp != _text)
+			if (pText != _text)
 			{
 				_text = pText;
-				_text = _text.split("\\n").join("\n");
-				if (_autoUpperCase)
-				{
-					_text = _text.toUpperCase();
-				}
 				_pendingTextChange = true;
 				update();
 			}
@@ -146,6 +165,7 @@ package pxBitmapFont
 				return;
 			}
 			
+			var preparedText:String = (_autoUpperCase) ? _text.toUpperCase() : _text;
 			var calcFieldWidth:int = _fieldWidth;
 			var rows:Array = [];
 			var fontHeight:int = Math.floor(_font.getFontHeight() * _fontScale);
@@ -155,7 +175,7 @@ package pxBitmapFont
 			var lineComplete:Boolean;
 			
 			// get words
-			var lines:Array = _text.split("\n");
+			var lines:Array = preparedText.split("\n");
 			var i:int = -1;
 			var j:int = -1;
 			if (!_multiLine)
@@ -166,12 +186,21 @@ package pxBitmapFont
 			var wordLength:int;
 			var word:String;
 			var tempStr:String;
+			
 			while (++i < lines.length) 
 			{
 				if (_fixedWidth)
 				{
 					lineComplete = false;
-					var words:Array = lines[i].split(" ");
+					var words:Array = [];
+					if (!wordWrap)
+					{
+						words = lines[i].split("\t").join(_tabSpaces).split(" ");
+					}
+					else
+					{
+						words = lines[i].split("\t").join(" \t ").split(" ");
+					}
 					
 					if (words.length > 0) 
 					{
@@ -180,11 +209,15 @@ package pxBitmapFont
 						while (!lineComplete) 
 						{
 							word = words[wordPos];
-							var currentRow:String = txt + word + " ";
 							var changed:Boolean = false;
+							var currentRow:String = txt + word;
 							
 							if (_wordWrap)
 							{
+								var prevWord:String = (wordPos > 0) ? words[wordPos - 1] : "";
+								var nextWord:String = (wordPos < words.length) ? words[wordPos + 1] : "";
+								if (prevWord != "\t") currentRow += " ";
+								
 								if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 								{
 									if (txt == "")
@@ -199,7 +232,14 @@ package pxBitmapFont
 									txt = "";
 									if (_multiLine)
 									{
-										words.splice(0, wordPos);
+										if (word == "\t" && (wordPos < words.length))
+										{
+											words.splice(0, wordPos + 1);
+										}
+										else
+										{
+											words.splice(0, wordPos);
+										}
 									}
 									else
 									{
@@ -210,35 +250,54 @@ package pxBitmapFont
 								}
 								else
 								{
-									txt += word + " ";
+									if (word == "\t")
+									{
+										txt += _tabSpaces;
+									}
+									if (nextWord == "\t" || prevWord == "\t")
+									{
+										txt += word;
+									}
+									else
+									{
+										txt += word + " ";
+									}
 									wordPos++;
 								}
-								
 							}
 							else
 							{
 								if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 								{
-									j = 0;
-									tempStr = "";
-									wordLength = word.length;
-									while (j < wordLength)
+									if (word != "")
 									{
-										currentRow = txt + word.charAt(j);
-										if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+										j = 0;
+										tempStr = "";
+										wordLength = word.length;
+										while (j < wordLength)
 										{
-											rows.push(txt.substr(0, txt.length - 1));
-											txt = "";
-											word = "";
-											wordPos = words.length;
-											j = wordLength;
-											changed = true;
+											currentRow = txt + word.charAt(j);
+											if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+											{
+												rows.push(txt.substr(0, txt.length - 1));
+												txt = "";
+												word = "";
+												wordPos = words.length;
+												j = wordLength;
+												changed = true;
+											}
+											else
+											{
+												txt += word.charAt(j);
+											}
+											
+											j++;
 										}
-										else
-										{
-											txt += word.charAt(j);
-										}
-										j++;
+									}
+									else
+									{
+										changed = false;
+										wordPos = words.length;
 									}
 								}
 								else
@@ -252,9 +311,8 @@ package pxBitmapFont
 							{
 								if (!changed) 
 								{
-									var subText:String = txt.substr(0, txt.length - 1);
-									calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(subText, _letterSpacing, _fontScale)));
-									rows.push(subText);
+									calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(txt, _letterSpacing, _fontScale)));
+									rows.push(txt);
 								}
 								lineComplete = true;
 							}
@@ -267,8 +325,9 @@ package pxBitmapFont
 				}
 				else
 				{
-					calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lines[i], _letterSpacing, _fontScale)));
-					rows.push(lines[i]);
+					var lineWithoutTabs:String = lines[i].split("\t").join(_tabSpaces);
+					calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lineWithoutTabs, _letterSpacing, _fontScale)));
+					rows.push(lineWithoutTabs);
 				}
 			}
 			

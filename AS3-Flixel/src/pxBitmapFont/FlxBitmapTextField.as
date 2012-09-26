@@ -34,6 +34,9 @@ package pxBitmapFont
 		private var _wordWrap:Boolean;
 		private var _fixedWidth:Boolean;
 		
+		private var _numSpacesInTab:int;
+		private var _tabSpaces:String;
+		
 		private var _pendingTextChange:Boolean;
 		private var _fieldWidth:int;
 		private var _multiLine:Boolean;
@@ -71,6 +74,9 @@ package pxBitmapFont
 			_wordWrap = true;
 			_alpha = 1;
 			
+			_numSpacesInTab = 4;
+			_tabSpaces = "    ";
+			
 			super();
 			
 			if (pFont == null)
@@ -91,7 +97,6 @@ package pxBitmapFont
 			_pixels = new BitmapData(1, 1, true);
 			
 			_pendingTextChange = true;
-			updateBitmapData();
 		}
 		
 		/**
@@ -117,18 +122,10 @@ package pxBitmapFont
 		
 		public function set text(pText:String):void 
 		{
-			var tmp:String = pText;
-			tmp = tmp.split("\\n").join("\n");
-			if (tmp != _text)
+			if (pText != _text)
 			{
 				_text = pText;
-				_text = _text.split("\\n").join("\n");
-				if (_autoUpperCase)
-				{
-					_text = _text.toUpperCase();
-				}
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -147,6 +144,7 @@ package pxBitmapFont
 				return;
 			}
 			
+			var preparedText:String = (_autoUpperCase) ? _text.toUpperCase() : _text;
 			var calcFieldWidth:int = _fieldWidth;
 			var rows:Array = [];
 			var fontHeight:int = Math.floor(_font.getFontHeight() * _fontScale);
@@ -156,7 +154,7 @@ package pxBitmapFont
 			var lineComplete:Boolean;
 			
 			// get words
-			var lines:Array = _text.split("\n");
+			var lines:Array = preparedText.split("\n");
 			var i:int = -1;
 			var j:int = -1;
 			if (!_multiLine)
@@ -172,7 +170,15 @@ package pxBitmapFont
 				if (_fixedWidth)
 				{
 					lineComplete = false;
-					var words:Array = lines[i].split(" ");
+					var words:Array = [];
+					if (!wordWrap)
+					{
+						words = lines[i].split("\t").join(_tabSpaces).split(" ");
+					}
+					else
+					{
+						words = lines[i].split("\t").join(" \t ").split(" ");
+					}
 					
 					if (words.length > 0) 
 					{
@@ -181,11 +187,15 @@ package pxBitmapFont
 						while (!lineComplete) 
 						{
 							word = words[wordPos];
-							var currentRow:String = txt + word + " ";
 							var changed:Boolean = false;
+							var currentRow:String = txt + word;
 							
 							if (_wordWrap)
 							{
+								var prevWord:String = (wordPos > 0) ? words[wordPos - 1] : "";
+								var nextWord:String = (wordPos < words.length) ? words[wordPos + 1] : "";
+								if (prevWord != "\t") currentRow += " ";
+								
 								if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 								{
 									if (txt == "")
@@ -200,19 +210,36 @@ package pxBitmapFont
 									txt = "";
 									if (_multiLine)
 									{
-										words.splice(0, wordPos);
+										if (word == "\t" && (wordPos < words.length))
+										{
+											words.splice(0, wordPos + 1);
+										}
+										else
+										{
+											words.splice(0, wordPos);
+										}
 									}
 									else
 									{
 										words.splice(0, words.length);
 									}
-									
 									wordPos = 0;
 									changed = true;
 								}
 								else
 								{
-									txt += word + " ";
+									if (word == "\t")
+									{
+										txt += _tabSpaces;
+									}
+									if (nextWord == "\t" || prevWord == "\t")
+									{
+										txt += word;
+									}
+									else
+									{
+										txt += word + " ";
+									}
 									wordPos++;
 								}
 							}
@@ -220,26 +247,34 @@ package pxBitmapFont
 							{
 								if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 								{
-									j = 0;
-									tempStr = "";
-									wordLength = word.length;
-									while (j < wordLength)
+									if (word != "")
 									{
-										currentRow = txt + word.charAt(j);
-										if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+										j = 0;
+										tempStr = "";
+										wordLength = word.length;
+										while (j < wordLength)
 										{
-											rows.push(txt.substr(0, txt.length - 1));
-											txt = "";
-											word = "";
-											wordPos = words.length;
-											j = wordLength;
-											changed = true;
+											currentRow = txt + word.charAt(j);
+											if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+											{
+												rows.push(txt.substr(0, txt.length - 1));
+												txt = "";
+												word = "";
+												wordPos = words.length;
+												j = wordLength;
+												changed = true;
+											}
+											else
+											{
+												txt += word.charAt(j);
+											}
+											j++;
 										}
-										else
-										{
-											txt += word.charAt(j);
-										}
-										j++;
+									}
+									else
+									{
+										changed = false;
+										wordPos = words.length;
 									}
 								}
 								else
@@ -253,9 +288,8 @@ package pxBitmapFont
 							{
 								if (!changed) 
 								{
-									var subText:String = txt.substr(0, txt.length - 1);
-									calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(subText, _letterSpacing, _fontScale)));
-									rows.push(subText);
+									calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(txt, _letterSpacing, _fontScale)));
+									rows.push(txt);
 								}
 								lineComplete = true;
 							}
@@ -268,8 +302,9 @@ package pxBitmapFont
 				}
 				else
 				{
-					calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lines[i], _letterSpacing, _fontScale)));
-					rows.push(lines[i]);
+					var lineWithoutTabs:String = lines[i].split("\t").join(_tabSpaces);
+					calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lineWithoutTabs, _letterSpacing, _fontScale)));
+					rows.push(lineWithoutTabs);
 				}
 			}
 			
@@ -363,7 +398,6 @@ package pxBitmapFont
 			{
 				_background = value;
 				_pendingTextChange = true;
-				update();
 			}
 		}
 		
@@ -383,7 +417,6 @@ package pxBitmapFont
 				if (_background)
 				{
 					_pendingTextChange = true;
-					update();
 				}
 			}
 		}
@@ -404,7 +437,6 @@ package pxBitmapFont
 				_outline = false;
 				updateGlyphs(false, _shadow, false);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -423,7 +455,6 @@ package pxBitmapFont
 				_shadowColor = value;
 				updateGlyphs(false, _shadow, false);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -441,7 +472,6 @@ package pxBitmapFont
 			{
 				_padding = value;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -460,7 +490,6 @@ package pxBitmapFont
 				_textColor = value;
 				updateGlyphs(true, false, false);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -479,7 +508,6 @@ package pxBitmapFont
 				_useTextColor = value;
 				updateGlyphs(true, false, false);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -496,7 +524,6 @@ package pxBitmapFont
 			{
 				_fieldWidth = pWidth;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -515,7 +542,6 @@ package pxBitmapFont
 			{
 				_alignment = pAlignment;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -533,7 +559,6 @@ package pxBitmapFont
 			{
 				_multiLine = pMultiLine;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -553,7 +578,6 @@ package pxBitmapFont
 				_shadow = false;
 				updateGlyphs(false, false, true);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -572,7 +596,6 @@ package pxBitmapFont
 				_outlineColor = value;
 				updateGlyphs(false, false, _outline);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -591,7 +614,6 @@ package pxBitmapFont
 				_font = pFont;
 				updateGlyphs(true, _shadow, _outline);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -609,7 +631,6 @@ package pxBitmapFont
 			{
 				_lineSpacing = Math.floor(Math.abs(pSpacing));
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -629,7 +650,6 @@ package pxBitmapFont
 				_fontScale = tmp;
 				updateGlyphs(true, _shadow, _outline);
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -645,7 +665,6 @@ package pxBitmapFont
 			{
 				_letterSpacing = tmp;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -663,6 +682,7 @@ package pxBitmapFont
 				{
 					text = _text.toUpperCase();
 				}
+				_pendingTextChange = true;
 			}
 		}
 		
@@ -677,7 +697,6 @@ package pxBitmapFont
 			{
 				_wordWrap = value;
 				_pendingTextChange = true;
-				updateBitmapData();
 			}
 		}
 		
@@ -692,7 +711,20 @@ package pxBitmapFont
 			{
 				_fixedWidth = value;
 				_pendingTextChange = true;
-				updateBitmapData();
+			}
+		}
+		
+		public function get numSpacesInTab():int 
+		{
+			return _numSpacesInTab;
+		}
+		
+		public function set numSpacesInTab(value:int):void 
+		{
+			if (_numSpacesInTab != value && value > 0)
+			{
+				_numSpacesInTab = value;
+				_pendingTextChange = true;
 			}
 		}
 		
@@ -730,6 +762,15 @@ package pxBitmapFont
 				}
 				pGlyphs = null;
 			}
+		}
+		
+		override public function update():void 
+		{
+			if (_pendingTextChange)
+			{
+				updateBitmapData();
+			}
+			super.update();
 		}
 		
 	}

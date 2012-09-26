@@ -33,6 +33,9 @@ class PxTextField extends Sprite
 	private var _wordWrap:Bool;
 	private var _fixedWidth:Bool;
 	
+	private var _numSpacesInTab:Int;
+	private var _tabSpaces:String;
+	
 	private var _pendingTextChange:Bool;
 	private var _fieldWidth:Int;
 	private var _multiLine:Bool;
@@ -83,6 +86,9 @@ class PxTextField extends Sprite
 		_wordWrap = true;
 		_alpha = 1;
 		
+		_numSpacesInTab = 4;
+		_tabSpaces = "    ";
+		
 		if (pFont == null)
 		{
 			if (PxBitmapFont.fetch("default") == null)
@@ -131,6 +137,23 @@ class PxTextField extends Sprite
 		#end
 	}
 	
+	public var numSpacesInTab(get_numSpacesInTab, set_numSpacesInTab):Int;
+	
+	public function get_numSpacesInTab():Int 
+	{
+		return _numSpacesInTab;
+	}
+	
+	public function set_numSpacesInTab(value:Int):Int 
+	{
+		if (_numSpacesInTab != value && value > 0)
+		{
+			_numSpacesInTab = value;
+			_pendingTextChange = true;
+		}
+		return value;
+	}
+	
 	/**
 	 * Text to display.
 	 */
@@ -143,16 +166,9 @@ class PxTextField extends Sprite
 	
 	public function set_text(pText:String):String 
 	{
-		var tmp:String = pText;
-		tmp = tmp.split("\\n").join("\n");
-		if (tmp != _text)
+		if (pText != _text)
 		{
 			_text = pText;
-			_text = _text.split("\\n").join("\n");
-			if (_autoUpperCase)
-			{
-				_text = _text.toUpperCase();
-			}
 			_pendingTextChange = true;
 			update();
 		}
@@ -181,6 +197,7 @@ class PxTextField extends Sprite
 			return;
 		}
 		
+		var preparedText:String = (_autoUpperCase) ? _text.toUpperCase() : _text;
 		var calcFieldWidth:Int = _fieldWidth;
 		var rows:Array<String> = [];
 		#if (flash || js)
@@ -194,7 +211,7 @@ class PxTextField extends Sprite
 		var lineComplete:Bool;
 		
 		// get words
-		var lines:Array<String> = _text.split("\n");
+		var lines:Array<String> = preparedText.split("\n");
 		var i:Int = -1;
 		var j:Int = -1;
 		if (!_multiLine)
@@ -210,7 +227,15 @@ class PxTextField extends Sprite
 			if (_fixedWidth)
 			{
 				lineComplete = false;
-				var words:Array<String> = lines[i].split(" ");
+				var words:Array<String> = [];
+				if (!wordWrap)
+				{
+					words = lines[i].split("\t").join(_tabSpaces).split(" ");
+				}
+				else
+				{
+					words = lines[i].split("\t").join(" \t ").split(" ");
+				}
 				
 				if (words.length > 0) 
 				{
@@ -219,11 +244,15 @@ class PxTextField extends Sprite
 					while (!lineComplete) 
 					{
 						word = words[wordPos];
-						var currentRow:String = txt + word + " ";
 						var changed:Bool = false;
+						var currentRow:String = txt + word;
 						
 						if (_wordWrap)
 						{
+							var prevWord:String = (wordPos > 0) ? words[wordPos - 1] : "";
+							var nextWord:String = (wordPos < words.length) ? words[wordPos + 1] : "";
+							if (prevWord != "\t") currentRow += " ";
+							
 							if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 							{
 								if (txt == "")
@@ -238,7 +267,14 @@ class PxTextField extends Sprite
 								txt = "";
 								if (_multiLine)
 								{
-									words.splice(0, wordPos);
+									if (word == "\t" && (wordPos < words.length))
+									{
+										words.splice(0, wordPos + 1);
+									}
+									else
+									{
+										words.splice(0, wordPos);
+									}
 								}
 								else
 								{
@@ -249,35 +285,53 @@ class PxTextField extends Sprite
 							}
 							else
 							{
-								txt += word + " ";
+								if (word == "\t")
+								{
+									txt += _tabSpaces;
+								}
+								if (nextWord == "\t" || prevWord == "\t")
+								{
+									txt += word;
+								}
+								else
+								{
+									txt += word + " ";
+								}
 								wordPos++;
 							}
-							
 						}
 						else
 						{
 							if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
 							{
-								j = 0;
-								tempStr = "";
-								wordLength = word.length;
-								while (j < wordLength)
+								if (word != "")
 								{
-									currentRow = txt + word.charAt(j);
-									if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+									j = 0;
+									tempStr = "";
+									wordLength = word.length;
+									while (j < wordLength)
 									{
-										rows.push(txt.substr(0, txt.length - 1));
-										txt = "";
-										word = "";
-										wordPos = words.length;
-										j = wordLength;
-										changed = true;
+										currentRow = txt + word.charAt(j);
+										if (_font.getTextWidth(currentRow, _letterSpacing, _fontScale) > _fieldWidth) 
+										{
+											rows.push(txt.substr(0, txt.length - 1));
+											txt = "";
+											word = "";
+											wordPos = words.length;
+											j = wordLength;
+											changed = true;
+										}
+										else
+										{
+											txt += word.charAt(j);
+										}
+										j++;
 									}
-									else
-									{
-										txt += word.charAt(j);
-									}
-									j++;
+								}
+								else
+								{
+									changed = false;
+									wordPos = words.length;
 								}
 							}
 							else
@@ -291,9 +345,8 @@ class PxTextField extends Sprite
 						{
 							if (!changed) 
 							{
-								var subText:String = txt.substr(0, txt.length - 1);
-								calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(subText, _letterSpacing, _fontScale)));
-								rows.push(subText);
+								calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(txt, _letterSpacing, _fontScale)));
+								rows.push(txt);
 							}
 							lineComplete = true;
 						}
@@ -306,8 +359,9 @@ class PxTextField extends Sprite
 			}
 			else
 			{
-				calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lines[i], _letterSpacing, _fontScale)));
-				rows.push(lines[i]);
+				var lineWithoutTabs:String = lines[i].split("\t").join(_tabSpaces);
+				calcFieldWidth = Math.floor(Math.max(calcFieldWidth, _font.getTextWidth(lineWithoutTabs, _letterSpacing, _fontScale)));
+				rows.push(lineWithoutTabs);
 			}
 		}
 		
