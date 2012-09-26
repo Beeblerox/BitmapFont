@@ -150,7 +150,7 @@ class PxTextField extends Sprite
 		{
 			_numSpacesInTab = value;
 			_tabSpaces = "";
-			for (i in 0...num)
+			for (i in 0...value)
 			{
 				_tabSpaces += " ";
 			}

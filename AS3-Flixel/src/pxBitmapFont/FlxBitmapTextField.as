@@ -721,7 +721,7 @@ package pxBitmapFont
 			{
 				_numSpacesInTab = value;
 				_tabSpaces = "";
-				for (var i:int = 0; i < num; i++)
+				for (var i:int = 0; i < value; i++)
 				{
 					_tabSpaces += " ";
 				}
