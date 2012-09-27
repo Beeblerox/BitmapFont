@@ -108,16 +108,6 @@ package pxBitmapFont
 					charString = String.fromCharCode(char.@id);
 					_glyphString += charString;
 					
-					// create glyph
-					if (charString != " " && charString != "")
-					{
-						bd = new BitmapData(int(char.@xadvance), int(char.@height) + int(char.@yoffset), true, 0x0);
-					}
-					else
-					{
-						bd = new BitmapData(int(char.@xadvance), 1, true, 0x0);
-					}
-					
 					rect.x = int(char.@x);
 					rect.y = int(char.@y);
 					rect.width = int(char.@width);
@@ -125,6 +115,26 @@ package pxBitmapFont
 					
 					point.x = int(char.@xoffset);
 					point.y = int(char.@yoffset);
+					
+					var xadvance:int = int(char.@xadvance);
+					var charWidth:int = xadvance;
+					
+					if (rect.width > xadvance)
+					{
+						charWidth = int(rect.width);
+						point.x = 0;
+					}
+					
+					// create glyph
+					if (charString != " " && charString != "")
+					{
+						bd = new BitmapData(charWidth, int(char.@height) + int(char.@yoffset), true, 0x0);
+					}
+					else
+					{
+						bd = new BitmapData(charWidth, 1, true, 0x0);
+					}
+					
 					bd.copyPixels(pBitmapData, rect, point, null, null, true);
 					
 					// store glyph
