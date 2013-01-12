@@ -333,9 +333,22 @@ class PxBitmapFont
 		for (i in 0...(_glyphs.length))
 		{
 			glyph = _glyphs[i];
+			var bdWidth:Int;
+			var bdHeight:Int;
 			if (glyph != null)
 			{
-				preparedGlyph = new BitmapData(Math.floor(glyph.width * pScale), Math.floor(glyph.height * pScale), true, 0x00000000);
+				if (pScale > 0)
+				{
+					bdWidth = Math.ceil(glyph.width * pScale);
+					bdHeight = Math.ceil(glyph.height * pScale);
+				}
+				else
+				{
+					bdWidth = 1;
+					bdHeight = 1;
+				}
+				
+				preparedGlyph = new BitmapData(bdWidth, bdHeight, true, 0x00000000);
 				if (pUseColorTransform)
 				{
 					preparedGlyph.draw(glyph,  _matrix, _colorTransform);

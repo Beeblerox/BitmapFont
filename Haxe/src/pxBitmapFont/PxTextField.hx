@@ -396,7 +396,6 @@ class PxTextField extends Sprite
 		{
 			bitmapData.fillRect(bitmapData.rect, _backgroundColor);
 		}
-		bitmapData.lock();
 		#else
 		var renderGraphics:Graphics = (Graph != null) ? Graph : this.graphics;
 		
@@ -410,71 +409,79 @@ class PxTextField extends Sprite
 		_drawData.splice(0, _drawData.length);
 		#end
 		
-		// render text
-		var row:Int = 0;
-		
-		for (t in rows) 
+		if (_fontScale > 0)
 		{
-			var ox:Int = 0; // LEFT
-			var oy:Int = 0;
-			if (alignment == PxTextAlign.CENTER) 
+			#if (flash || js)
+			bitmapData.lock();
+			#end
+			
+			// render text
+			var row:Int = 0;
+			
+			for (t in rows) 
 			{
-				if (_fixedWidth)
+				var ox:Int = 0; // LEFT
+				var oy:Int = 0;
+				if (alignment == PxTextAlign.CENTER) 
 				{
-					ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
-				}
-				else
-				{
-					ox = Math.floor((finalWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
-				}
-			}
-			if (alignment == PxTextAlign.RIGHT) 
-			{
-				if (_fixedWidth)
-				{
-					ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
-				}
-				else
-				{
-					ox = finalWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale)) - 2 * padding;
-				}
-			}
-			if (_outline) 
-			{
-				for (py in 0...(2 + 1)) 
-				{
-					for (px in 0...(2 + 1)) 
+					if (_fixedWidth)
 					{
-						#if (flash || js)
-						_font.render(bitmapData, _preparedOutlineGlyphs, t, _outlineColor, px + ox + _padding, py + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
-						#else
-						_font.render(_drawData, t, _outlineColor, _alpha, X + px + ox + _padding, Y + py + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
-						#end
+						ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
+					}
+					else
+					{
+						ox = Math.floor((finalWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
 					}
 				}
-				ox += 1;
-				oy += 1;
-			}
-			if (_shadow) 
-			{
+				if (alignment == PxTextAlign.RIGHT) 
+				{
+					if (_fixedWidth)
+					{
+						ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
+					}
+					else
+					{
+						ox = finalWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale)) - 2 * padding;
+					}
+				}
+				if (_outline) 
+				{
+					for (py in 0...(2 + 1)) 
+					{
+						for (px in 0...(2 + 1)) 
+						{
+							#if (flash || js)
+							_font.render(bitmapData, _preparedOutlineGlyphs, t, _outlineColor, px + ox + _padding, py + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+							#else
+							_font.render(_drawData, t, _outlineColor, _alpha, X + px + ox + _padding, Y + py + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+							#end
+						}
+					}
+					ox += 1;
+					oy += 1;
+				}
+				if (_shadow) 
+				{
+					#if (flash || js)
+					_font.render(bitmapData, _preparedShadowGlyphs, t, _shadowColor, 1 + ox + _padding, 1 + oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+					#else
+					_font.render(_drawData, t, _shadowColor, _alpha, X + 1 + ox + _padding, Y + 1 + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+					#end
+				}
 				#if (flash || js)
-				_font.render(bitmapData, _preparedShadowGlyphs, t, _shadowColor, 1 + ox + _padding, 1 + oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+				_font.render(bitmapData, _preparedTextGlyphs, t, _color, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
 				#else
-				_font.render(_drawData, t, _shadowColor, _alpha, X + 1 + ox + _padding, Y + 1 + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale);
+				_font.render(_drawData, t, _color, _alpha, X + ox + _padding, Y + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale, _useColor);
 				#end
+				row++;
 			}
+			
 			#if (flash || js)
-			_font.render(bitmapData, _preparedTextGlyphs, t, _color, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+			bitmapData.unlock();
 			#else
-			_font.render(_drawData, t, _color, _alpha, X + ox + _padding, Y + oy + row * (Math.floor(fontHeight * _fontScale) + _lineSpacing) + _padding, _letterSpacing, _fontScale, _useColor);
+			_font.drawText(renderGraphics, _drawData);
 			#end
-			row++;
 		}
-		#if (flash || js)
-		bitmapData.unlock();
-		#else
-		_font.drawText(renderGraphics, _drawData);
-		#end
 		
 		_pendingTextChange = false;
 	}

@@ -229,9 +229,22 @@ package pxBitmapFont
 			for (var i:int = 0; i < _glyphs.length; i++)
 			{
 				glyph = _glyphs[i];
+				var bdWidth:int;
+				var bdHeight:int;
 				if (glyph != null)
 				{
-					preparedGlyph = new BitmapData(Math.floor(glyph.width * pScale), Math.floor(glyph.height * pScale), true, 0x00000000);
+					if (pScale > 0)
+					{
+						bdWidth = Math.ceil(glyph.width * pScale);
+						bdHeight = Math.ceil(glyph.height * pScale);
+					}
+					else
+					{
+						bdWidth = 1;
+						bdHeight = 1;
+					}
+					
+					preparedGlyph = new BitmapData(bdWidth, bdHeight, true, 0x00000000);
 					if (pUseColorTranform)
 					{
 						preparedGlyph.draw(glyph,  _matrix, _colorTransform);

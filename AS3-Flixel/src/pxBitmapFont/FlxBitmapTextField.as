@@ -328,58 +328,62 @@ package pxBitmapFont
 			{
 				_pixels.fillRect(_pixels.rect, _backgroundColor);
 			}
-			_pixels.lock();
 			
-			// render text
-			var row:int = 0;
-			
-			for each (var t:String in rows) 
+			if (_fontScale > 0)
 			{
-				var ox:int = 0; // LEFT
-				var oy:int = 0;
-				if (alignment == PxTextAlign.CENTER) 
+				_pixels.lock();
+				
+				// render text
+				var row:int = 0;
+				
+				for each (var t:String in rows) 
 				{
-					if (_fixedWidth)
+					var ox:int = 0; // LEFT
+					var oy:int = 0;
+					if (alignment == PxTextAlign.CENTER) 
 					{
-						ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
-					}
-					else
-					{
-						ox = Math.floor((finalWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
-					}
-				}
-				if (alignment == PxTextAlign.RIGHT) 
-				{
-					if (_fixedWidth)
-					{
-						ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
-					}
-					else
-					{
-						ox = finalWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale)) - 2 * padding;
-					}
-				}
-				if (_outline) 
-				{
-					for (var py:int = 0; py <= 2; py++) 
-					{
-						for (var px:int = 0; px <= 2; px++) 
+						if (_fixedWidth)
 						{
-							_font.render(_pixels, _preparedOutlineGlyphs, t, _outlineColor, px + ox + _padding, py + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+							ox = Math.floor((_fieldWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
+						}
+						else
+						{
+							ox = Math.floor((finalWidth - _font.getTextWidth(t, _letterSpacing, _fontScale)) / 2);
 						}
 					}
-					ox += 1;
-					oy += 1;
+					if (alignment == PxTextAlign.RIGHT) 
+					{
+						if (_fixedWidth)
+						{
+							ox = _fieldWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale));
+						}
+						else
+						{
+							ox = finalWidth - Math.floor(_font.getTextWidth(t, _letterSpacing, _fontScale)) - 2 * padding;
+						}
+					}
+					if (_outline) 
+					{
+						for (var py:int = 0; py <= 2; py++) 
+						{
+							for (var px:int = 0; px <= 2; px++) 
+							{
+								_font.render(_pixels, _preparedOutlineGlyphs, t, _outlineColor, px + ox + _padding, py + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+							}
+						}
+						ox += 1;
+						oy += 1;
+					}
+					if (_shadow) 
+					{
+						_font.render(_pixels, _preparedShadowGlyphs, t, _shadowColor, 1 + ox + _padding, 1 + oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+					}
+					_font.render(_pixels, _preparedTextGlyphs, t, _textColor, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
+					row++;
 				}
-				if (_shadow) 
-				{
-					_font.render(_pixels, _preparedShadowGlyphs, t, _shadowColor, 1 + ox + _padding, 1 + oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
-				}
-				_font.render(_pixels, _preparedTextGlyphs, t, _textColor, ox + _padding, oy + row * (fontHeight + _lineSpacing) + _padding, _letterSpacing);
-				row++;
+				_pixels.unlock();
+				pixels = _pixels;
 			}
-			_pixels.unlock();
-			pixels = _pixels;
 			
 			_pendingTextChange = false;
 		}
