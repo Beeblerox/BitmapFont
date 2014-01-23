@@ -1,6 +1,6 @@
 package pxBitmapFont;
 
-import nme.display.BitmapData;
+import flash.display.BitmapData;
 import pxBitmapFont.PxBitmapFont;
 
 /**

@@ -1,14 +1,14 @@
 package ;
 
 import flash.display.BitmapData;
-import nme.Assets;
-import nme.display.Bitmap;
-import nme.display.Sprite;
-import nme.display.StageAlign;
-import nme.display.StageScaleMode;
-import nme.events.MouseEvent;
-import nme.geom.Rectangle;
-import nme.Lib;
+import openfl.Assets;
+import flash.display.Bitmap;
+import flash.display.Sprite;
+import flash.display.StageAlign;
+import flash.display.StageScaleMode;
+import flash.events.MouseEvent;
+import flash.geom.Rectangle;
+import flash.Lib;
 import pxBitmapFont.PxBitmapFont;
 import pxBitmapFont.PxTextAlign;
 
