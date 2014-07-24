@@ -1,6 +1,6 @@
 package pxBitmapFont;
 
-import nme.display.BitmapData;
+import openfl.display.BitmapData;
 import pxBitmapFont.PxBitmapFont;
 
 /**
