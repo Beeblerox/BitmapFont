@@ -1,12 +1,13 @@
 package pxBitmapFont;
 
-import nme.display.BitmapData;
-import nme.display.BitmapInt32;
-import nme.display.Graphics;
-import nme.geom.ColorTransform;
-import nme.geom.Matrix;
-import nme.geom.Point;
-import nme.geom.Rectangle;
+import openfl.display.Tilesheet;
+import openfl.display.BitmapData;
+//import openfl.display.BitmapInt32;
+import openfl.display.Graphics;
+import openfl.geom.ColorTransform;
+import openfl.geom.Matrix;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
 #if (cpp || neko)
 import nme.display.Tilesheet;
@@ -18,14 +19,14 @@ import nme.display.Tilesheet;
  */
 class PxBitmapFont 
 {
-	private static var _storedFonts:Hash<PxBitmapFont> = new Hash<PxBitmapFont>();
+	private static var _storedFonts:Map<String, PxBitmapFont> = new Map<String, PxBitmapFont>();
 	
 	private static var ZERO_POINT:Point = new Point();
 	
 	#if (flash || js)
 	private var _glyphs:Array<BitmapData>;
 	#else
-	private var _glyphs:IntHash<PxFontSymbol>;
+	private var _glyphs:Map<PxFontSymbol>;
 	private var _num_letters:Int;
 	private var _tileSheet:Tilesheet;
 	private static var _flags = Tilesheet.TILE_SCALE | Tilesheet.TILE_ROTATION | Tilesheet.TILE_ALPHA | Tilesheet.TILE_RGB;
@@ -54,7 +55,7 @@ class PxBitmapFont
 		_colorTransform = new ColorTransform();
 		_glyphs = [];
 		#else
-		_glyphs = new IntHash<PxFontSymbol>();
+		_glyphs = new Map<PxFontSymbol>();
 		_num_letters = 0;
 		#end
 	}
@@ -212,7 +213,7 @@ class PxBitmapFont
 		#if (flash || js)
 		_glyphs = [];
 		#else
-		_glyphs = new IntHash<PxFontSymbol>();
+		_glyphs = new Map<PxFontSymbol>();
 		#end
 		_glyphString = "";
 	}
@@ -282,8 +283,8 @@ class PxBitmapFont
 		var pixelColor:Int;
 		var bgColor32:Int = pBitmapData.getPixel(0, 0);
 		#else
-		var pixelColor:BitmapInt32;
-		var bgColor32:BitmapInt32 = pBitmapData.getPixel32(0, 0);
+//		var pixelColor:BitmapInt32;
+//		var bgColor32:BitmapInt32 = pBitmapData.getPixel32(0, 0);
 		#end
 		
 		cy = 0;

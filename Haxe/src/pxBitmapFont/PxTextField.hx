@@ -1,10 +1,10 @@
 package pxBitmapFont;
 
-import nme.display.Bitmap;
-import nme.display.BitmapData;
-import nme.display.Graphics;
-import nme.display.Sprite;
-import nme.geom.Matrix;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
+import openfl.display.Graphics;
+import openfl.display.Sprite;
+import openfl.geom.Matrix;
 import pxBitmapFont.PxBitmapFont;
 
 /**
@@ -408,7 +408,7 @@ class PxTextField extends Sprite
 		}
 		_drawData.splice(0, _drawData.length);
 		#end
-		
+
 		if (_fontScale > 0)
 		{
 			#if (flash || js)
