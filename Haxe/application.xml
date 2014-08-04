@@ -10,18 +10,15 @@
 	
 	<!-- classpath, haxe libs -->
 	<classpath name="src" />
-	<haxelib name="nme" />
+	<haxelib name="openfl" />
 	
 	<!-- assets -->
-	<icon name="assets/nme.svg" />
-	<assets path="assets" include="*" exclude="nme.svg" />
+	<assets path="assets" include="*" />
 	
-	<!-- DLLs -->
-	<ndll name="std" />
-	<ndll name="regexp" />
-	<ndll name="zlib" />
-	<ndll name="nme" haxelib="nme" />
+	<!-- Allow this setting to be overridden on the command-line -->
+	<set name="RENDER_BLIT" if="flash || html5" unless="RENDER_TILE" />
+	<set name="RENDER_TILE" unless="RENDER_BLIT" />
 	
-	<!-- Windows app: hide console -->
-	<!--<setenv name="no_console" value="1" />-->
+	<haxedef name="RENDER_BLIT" if="RENDER_BLIT" />
+	<haxedef name="RENDER_TILE" if="RENDER_TILE" />
 </project>

@@ -1,18 +1,21 @@
 package ;
 
+import bitmapFont.TextBorderStyle;
 import flash.display.BitmapData;
-import nme.Assets;
-import nme.display.Bitmap;
-import nme.display.Sprite;
-import nme.display.StageAlign;
-import nme.display.StageScaleMode;
-import nme.events.MouseEvent;
-import nme.geom.Rectangle;
-import nme.Lib;
-import pxBitmapFont.PxBitmapFont;
-import pxBitmapFont.PxTextAlign;
+import openfl.Assets;
+import flash.display.Bitmap;
+import flash.display.Sprite;
+import flash.display.StageAlign;
+import flash.display.StageScaleMode;
+import flash.events.MouseEvent;
+import flash.geom.Rectangle;
+import openfl.events.Event;
+import openfl.Lib;
+import bitmapFont.BitmapFont;
+import bitmapFont.BitmapTextField;
+import openfl.text.TextFormatAlign;
 
-import pxBitmapFont.PxTextField;
+import bitmapFont.DefaultBitmapFont;
 
 /**
  * ...
@@ -21,8 +24,8 @@ import pxBitmapFont.PxTextField;
 
 class Main extends Sprite
 {
-	private var tf:PxTextField;
-	private var tf2:PxTextField;
+//	private var tf:BitmapTextField;
+//	private var tf2:BitmapTextField;
 	
 	static public function main() 
 	{
@@ -38,6 +41,26 @@ class Main extends Sprite
 	{
 		super();
 		
+		var field:BitmapTextField = new BitmapTextField();
+		addChild(field);
+		
+		field.text = "hello!!!";
+		field.textColor = 0xFF0000FF;
+		field.useTextColor = true;
+		
+		field.background = true;
+		field.backgroundColor = 0xffff0000;
+		
+		field.borderStyle = TextBorderStyle.SHADOW;
+		field.borderColor = 0xff00ff00;
+		
+		field.size = 5;
+		
+		field.letterSpacing = 25;
+		
+		field.padding = 10;
+		
+		/*
 		var font:PxBitmapFont = new PxBitmapFont().loadPixelizer(Assets.getBitmapData("assets/fontData10pt.png"), " !\"#$%&'()*+,-./" + "0123456789:;<=>?" + "@ABCDEFGHIJKLMNO" + "PQRSTUVWXYZ[]^_" + "abcdefghijklmno" + "pqrstuvwxyz{|}~\\");
 		
 		var textBytes = Assets.getText("assets/NavTitle.fnt");
@@ -62,7 +85,7 @@ class Main extends Sprite
 	//	tf.setAlpha(0.5);
 		
 		tf.drawText(this.graphics, 100, 200);
-		
+		*/
 	/*	
 		
 		tf2 = new PxTextField(font2);
@@ -90,6 +113,13 @@ class Main extends Sprite
 	//	tf2.setAlpha(0.2);*/
 		
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+		
+		this.addEventListener(Event.RENDER, onRender);
+	}
+	
+	private function onRender(e:Event):Void 
+	{
+		trace("onRender");
 	}
 	
 	private function onMouseMove(e:MouseEvent):Void 
