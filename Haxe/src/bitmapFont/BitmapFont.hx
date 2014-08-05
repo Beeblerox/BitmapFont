@@ -13,11 +13,8 @@ import openfl.geom.Rectangle;
 import openfl.display.Tilesheet;
 #end
 
-// TODO: rename destroy() methods to dispose()
-
 /**
- * Holds information and bitmap glpyhs for a bitmap font.
- * @author Johan Peitz
+ * Holds information and bitmap glyphs for a bitmap font.
  */
 class BitmapFont
 {
@@ -25,17 +22,20 @@ class BitmapFont
 	
 	/**
 	 * Stores a font for global use using an identifier.
-	 * @param	pHandle	String identifer for the font.
-	 * @param	pFont	Font to store.
+	 * @param	fontKey		String identifer for the font.
+	 * @param	font		Font to store.
 	 */
 	public static function store(fontKey:String, font:BitmapFont):Void 
 	{
-		fonts.set(fontKey, font);
+		if (!fonts.exists(fontKey))
+		{
+			fonts.set(fontKey, font);
+		}
 	}
 	
 	/**
 	 * Retrieves a font previously stored.
-	 * @param	pHandle	Identifier of font to fetch.
+	 * @param	fontKey		Identifier of font to fetch.
 	 * @return	Stored font, or null if no font was found.
 	 */
 	public static function get(fontKey:String):BitmapFont 
@@ -44,29 +44,44 @@ class BitmapFont
 	}
 	
 	/**
-	 * 
-	 * @param	fontKey
+	 * Removes font with provided fontKey and disposes it.
+	 * @param	fontKey		The name of font to remove.
 	 */
 	public static function remove(fontKey):Void
 	{
 		var font:BitmapFont = fonts.get(fontKey);
+		fonts.remove(fontKey);
 		
 		if (font != null)
 		{
-			font.destroy();
+			font.dispose();
 		}
 	}
 	
+	/**
+	 * Clears fonts storage and disposes all fonts.
+	 */
 	public static function clearFonts():Void
 	{
 		for (font in fonts)
 		{
-			font.destroy();
+			font.dispose();
 		}
 		
 		fonts = new Map<String, BitmapFont>();
 	}
 	
+	/**
+	 * Retrieves default BitmapFont.
+	 */
+	public static function getDefault():BitmapFont
+	{
+		return DefaultBitmapFont.getDefaultFont();
+	}
+	
+	/**
+	 * Default letters for XNA font.
+	 */
 	public static inline var DEFAULT_GLYPHS:String = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 	
 	private static var POINT:Point = new Point();
@@ -75,6 +90,9 @@ class BitmapFont
 	
 	private static var COLOR_TRANSFORM:ColorTransform = new ColorTransform();
 	
+	/**
+	 * The size of the font. Can be useful for AngelCode fonts.
+	 */
 	public var size(default, null):Int = 0;
 	
 	public var lineHeight(default, null):Int = 0;
@@ -85,12 +103,20 @@ class BitmapFont
 	
 	public var fontName:String;
 	
-	public var numLetters(default, null):Int = 0;
-	
+	/**
+	 * Minimum x offset in this font. 
+	 * This is a helper varible for rendering purposes.
+	 */
 	public var minOffsetX:Int = 0;
 	
+	/**
+	 * The width of space character.
+	 */
 	public var spaceWidth:Int = 0;
 	
+	/**
+	 * Source image for this font.
+	 */
 	public var bitmap:BitmapData;
 	
 	public var glyphs:Map<String, BitmapGlyphFrame>;
@@ -100,18 +126,24 @@ class BitmapFont
 	#end
 	
 	/**
-	 * Creates a new bitmap font using specified bitmap data and letter input.
+	 * Creates and stores new bitmap font using specified source image.
 	 */
-	public function new(bitmap:BitmapData)
+	public function new(name:String, bitmap:BitmapData)
 	{
 		this.bitmap = bitmap;
+		this.fontName = name;
 		#if RENDER_TILE
 		tilesheet = new Tilesheet(bitmap);
 		#end
 		glyphs = new Map<String, BitmapGlyphFrame>();
+		BitmapFont.store(name, this);
 	}
 	
-	public function destroy():Void 
+	/**
+	 * Destroys this font object.
+	 * WARNING: it disposes source image also.
+	 */
+	public function dispose():Void 
 	{
 		if (bitmap != null)
 		{
@@ -124,14 +156,6 @@ class BitmapFont
 		#end
 		glyphs = null;
 		fontName = null;
-	}
-	
-	/**
-	 * Retrieves default BitmapFont.
-	 */
-	public static function getDefault():BitmapFont
-	{
-		return DefaultBitmapFont.getDefaultFont();
 	}
 	
 	/**
@@ -153,15 +177,13 @@ class BitmapFont
 			return font;
 		}
 		
-		font = new BitmapFont(Source);
-		
+		font = new BitmapFont(fontName, Source);
 		font.lineHeight = Std.parseInt(fast.node.common.att.lineHeight);
 		font.size = Std.parseInt(fast.node.info.att.size);
 		font.fontName = Std.string(fast.node.info.att.face);
 		font.bold = (Std.parseInt(fast.node.info.att.bold) != 0);
 		font.italic = (Std.parseInt(fast.node.info.att.italic) != 0);
 		
-		var glyphFrame:BitmapGlyphFrame;
 		var frame:Rectangle;
 		var glyph:String;
 		var xOffset:Int, yOffset:Int, xAdvance:Int;
@@ -220,13 +242,14 @@ class BitmapFont
 	}
 	
 	/**
-	 * Load bitmap font in XNA/Pixelizer format.
+	 * Load bitmap font in XNA/Pixelizer format. 
+	 * I took this method from HaxePunk engine.
 	 * 
-	 * @param	key				
+	 * @param	key				Name for this font.
 	 * @param	source			Source image for this font.
 	 * @param	letters			String of glyphs contained in the source image, in order (ex. " abcdefghijklmnopqrstuvwxyz"). Defaults to DEFAULT_GLYPHS.
 	 * @param	glyphBGColor	An additional background color to remove. Defaults to 0xFF202020, often used for glyphs background.
-	 * @return	
+	 * @return	Generated bitmap font object.
 	 */
 	public static function fromXNA(key:String, source:BitmapData, letters:String = null, glyphBGColor:Int = 0x00000000):BitmapFont
 	{
@@ -237,7 +260,7 @@ class BitmapFont
 			return font;
 		}
 		
-		font = new BitmapFont(source);
+		font = new BitmapFont(key, source);
 		font.fontName = key;
 		
 		letters = (letters == null) ? DEFAULT_GLYPHS : letters;
@@ -319,13 +342,13 @@ class BitmapFont
 	/**
 	 * Loads monospace bitmap font.
 	 * 
-	 * @param	key			
+	 * @param	key			Name for this font.
 	 * @param	source		Source image for this font.
 	 * @param	letters		The characters used in the font set, in display order. You can use the TEXT_SET consts for common font set arrangements.
 	 * @param	charSize	The size of each character in the font set.
 	 * @param	region		The region of image to use for the font. Default is null which means that the whole image will be used.
 	 * @param	spacing		Spaces between characters in the font set. Default is null which means no spaces.
-	 * @return
+	 * @return	Generated bitmap font object.
 	 */
 	public static function fromMonospace(key:String, source:BitmapData, letters:String = null, charSize:Point, region:Rectangle = null, spacing:Point = null):BitmapFont
 	{
@@ -367,7 +390,7 @@ class BitmapFont
 		var numRows:Int = (charHeight == 0) ? 1 : Std.int((bitmapHeight + ySpacing) / spacedHeight);
 		var numCols:Int = (charWidth == 0) ? 1 : Std.int((bitmapWidth + xSpacing) / spacedWidth);
 		
-		font = new BitmapFont(source);
+		font = new BitmapFont(key, source);
 		font.fontName = key;
 		font.lineHeight = font.size = charHeight;
 		
@@ -396,15 +419,14 @@ class BitmapFont
 		return font;
 	}
 	
-	// TODO: document it...
 	/**
+	 * Internal method which creates and add glyph frames into this font.
 	 * 
-	 * 
-	 * @param	glyph
-	 * @param	frame
-	 * @param	sourceSize
-	 * @param	offset
-	 * @param	xAdvance
+	 * @param	glyph			Letter for glyph frame.
+	 * @param	frame			Glyph area from source image.
+	 * @param	offsetX			X offset before rendering this glyph.
+	 * @param	offsetX			Y offset before rendering this glyph.
+	 * @param	xAdvance		How much cursor will jump after this glyph.
 	 */
 	private function addGlyphFrame(glyph:String, frame:Rectangle, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0):Void
 	{
@@ -423,6 +445,15 @@ class BitmapFont
 	}
 	
 	#if RENDER_BLIT
+	/**
+	 * Generates special collection of BitmapGlyph objects, which are used in RENDER_BLIT mode.
+	 * These BitmapGlyph objects contain prepared (scales and color transformed) glyph images, which saves some CPU cycles for you.
+	 * 
+	 * @param	scale		How much scale apply to glyphs.
+	 * @param	color		color in AARRGGBB format for glyph preparations.
+	 * @param	useColor	Whether to use color transformation for glyphs.
+	 * @return	Generated collection of BitmapGlyph objects. They are used for rendering text and borders in RENDER_BLIT mode.
+	 */
 	public function prepareGlyphs(scale:Float, color:UInt, useColor:Bool = true):BitmapGlyphCollection
 	{
 		return new BitmapGlyphCollection(this, scale, color, useColor);
@@ -431,8 +462,83 @@ class BitmapFont
 }
 
 /**
+ * Helper object. Stores info about single glyph (without transformations).
+ */
+class BitmapGlyphFrame 
+{
+	/**
+	 * Bitmap font which this glyph frame belongs to.
+	 */
+	public var parent:BitmapFont;
+	
+	public var glyph:String;
+	
+	/**
+	 * x offset to draw symbol with
+	 */
+	public var xoffset:Int;
+	
+	/**
+	 * y offset to draw symbol with
+	 */
+	public var yoffset:Int;
+	
+	/**
+	 * real width of symbol
+	 */
+	public var xadvance:Int;
+	
+	/**
+	 * Source image area which contains image of this glyph
+	 */
+	public var rect:Rectangle;
+	
+	/**
+	 * Trimmed image of this glyph
+	 */
+	public var bitmap(get, null):BitmapData;
+	
+	private var _bitmap:BitmapData;
+	
+	/**
+	 * tile id in parent's tileSheet
+	 */
+	public var tileID:Int;
+	
+	public function new(parent:BitmapFont)
+	{ 
+		this.parent = parent;
+	}
+	
+	public function dispose():Void
+	{
+		rect = null;
+		glyph = null;
+		
+		if (_bitmap != null)
+		{
+			_bitmap.dispose();
+		}
+		
+		_bitmap = null;
+	}
+	
+	public function get_bitmap():BitmapData
+	{
+		if (_bitmap != null)
+		{
+			return _bitmap;
+		}
+		
+		_bitmap = new BitmapData(Math.ceil(rect.width), Math.ceil(rect.height), true, 0x00000000);
+		_bitmap.copyPixels(parent.bitmap, rect, new Point());
+		return _bitmap;
+	}
+}
+
+/**
  * Helper class for blit render mode to reduce BitmapData draw() method calls.
- * It stores info about transformed bitmap font glyphs. 
+ * It stores info about transformed (scale and color transformed) bitmap font glyphs. 
  */
 class BitmapGlyphCollection
 {
@@ -502,13 +608,13 @@ class BitmapGlyphCollection
 		}
 	}
 	
-	public function destroy():Void
+	public function dispose():Void
 	{
 		if (glyphs != null)
 		{
 			for (glyph in glyphs)
 			{
-				glyph.destroy();
+				glyph.dispose();
 			}
 		}
 		
@@ -546,7 +652,7 @@ class BitmapGlyph
 		this.rect = bmd.rect;
 	}
 	
-	public function destroy():Void
+	public function dispose():Void
 	{
 		if (bitmap != null)
 		{

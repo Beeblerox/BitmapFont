@@ -1,5 +1,8 @@
 package bitmapFont;
 
+/**
+ * Possible border styles for BitmapTextField. Default is NONE, which means no borders.
+ */
 enum TextBorderStyle
 {
 	NONE;

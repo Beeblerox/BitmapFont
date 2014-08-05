@@ -11,8 +11,7 @@ import bitmapFont.BitmapFont;
 import openfl.display.Tilesheet;
 
 /**
- * Renders a text field.
- * @author Johan Peitz
+ * Class for rendering text with provided bitmap font and some additional options.
  */
 class BitmapTextField extends Sprite 
 {
@@ -39,7 +38,6 @@ class BitmapTextField extends Sprite
 	
 	/**
 	 * Specifies how the text field should align text.
-	 * JUSTIFY alignment isn't supported.
 	 */
 	@:isVar
 	public var alignment(default, set):BitmapTextAlign = BitmapTextAlign.LEFT;
@@ -111,8 +109,7 @@ class BitmapTextField extends Sprite
 	private var _tabSpaces:String = "    ";
 	
 	/**
-	 * The color of the text.
-	 * Result color of text will be multiplication of textColor and color.
+	 * The color of the text in 0xAARRGGBB format.
 	 */
 	@:isVar
 	public var textColor(default, set):UInt = 0xFFFFFFFF;
@@ -129,7 +126,7 @@ class BitmapTextField extends Sprite
 	public var borderStyle(default, set):TextBorderStyle = NONE;
 	
 	/**
-	 * The color of the border in 0xRRGGBB format
+	 * The color of the border in 0xAARRGGBB format
 	 */	
 	public var borderColor(default, set):UInt = 0x00000000;
 	
@@ -158,7 +155,7 @@ class BitmapTextField extends Sprite
 	public var background(default, set):Bool = false;
 	
 	/**
-	 * Specifies the color of background
+	 * Specifies the color of background in 0xAARRGGBB format.
 	 */
 	@:isVar
 	public var backgroundColor(default, set):UInt = 0x00000000;
@@ -176,11 +173,19 @@ class BitmapTextField extends Sprite
 	public var numLines(get, null):Int = 0;
 	
 	/**
-	 * The "size" of the font.
+	 * The "size" (scale) of the font.
 	 */
 	@:isVar
 	public var size(default, set):Float = 1;
 	
+	/**
+	 * Whether graphics/bitmapdata of this text field should be updated immediately after each setter call.
+	 * Default value is true which means that graphics will be updated/regenerated after each setter call,
+	 * which could be CPU-heavy.
+	 * So if you want to save some CPU resources then you could set updateImmediately to false,
+	 * make all operations with this text field (change text color, size, border style, etc.).
+	 * and then set updateImmediately back to true which will immediately update graphics of this text field. 
+	 */
 	@:isVar
 	public var updateImmediately(default, set):Bool = true;
 	
@@ -197,7 +202,14 @@ class BitmapTextField extends Sprite
 	private var _bitmap:Bitmap;
 	private var _bitmapData:BitmapData;
 	
+	/**
+	 * Glyphs for text rendering. Used only in blit render mode.
+	 */
 	private var textGlyphs:BitmapGlyphCollection;
+	/**
+	 * Glyphs for border (shadow or outline) rendering.
+	 * Used only in blit render mode.
+	 */
 	private var borderGlyphs:BitmapGlyphCollection;
 	
 	private var _point:Point;
@@ -208,6 +220,7 @@ class BitmapTextField extends Sprite
 	/**
 	 * Constructs a new text field component.
 	 * @param font	optional parameter for component's font prop
+	 * @param text	optional parameter for component's text
 	 */
 	public function new(?font:BitmapFont, text:String = "") 
 	{
@@ -234,10 +247,12 @@ class BitmapTextField extends Sprite
 	}
 	
 	/**
-	 * Clears all resources used.
+	 * Clears all resources used by this text field.
 	 */
-	public function destroy():Void 
+	public function dispose():Void 
 	{
+		updateImmediately = false;
+		
 		font = null;
 		text = null;
 		_lines = null;
@@ -249,13 +264,13 @@ class BitmapTextField extends Sprite
 		
 		if (textGlyphs != null)
 		{
-			textGlyphs.destroy();
+			textGlyphs.dispose();
 		}
 		textGlyphs = null;
 		
 		if (borderGlyphs != null)
 		{
-			borderGlyphs.destroy();
+			borderGlyphs.dispose();
 		}
 		borderGlyphs = null;
 		
@@ -340,11 +355,9 @@ class BitmapTextField extends Sprite
 		return value;
 	}
 	
-	// TODO: override calcFrame (maybe)
-	
 	private function set_text(value:String):String 
 	{
-		if (value != text)
+		if (value != text && value != null)
 		{
 			text = value;
 			_pendingTextChange = true;
@@ -1166,7 +1179,7 @@ class BitmapTextField extends Sprite
 	 * Set border's style (shadow, outline, etc), color, and size all in one go!
 	 * 
 	 * @param	Style outline style
-	 * @param	Color outline color in flash 0xRRGGBB format
+	 * @param	Color outline color in flash 0xAARRGGBB format
 	 * @param	Size outline size in pixels
 	 * @param	Quality outline quality - # of iterations to use when drawing. 0:just 1, 1:equal number to BorderSize
 	 */
@@ -1233,7 +1246,7 @@ class BitmapTextField extends Sprite
 	
 	private function set_font(value:BitmapFont):BitmapFont 
 	{
-		if (font != value)
+		if (font != value && value != null)
 		{
 			font = value;
 			_pendingTextChange = true;
@@ -1505,7 +1518,7 @@ class BitmapTextField extends Sprite
 		
 		if (textGlyphs != null)
 		{
-			textGlyphs.destroy();
+			textGlyphs.dispose();
 		}
 		textGlyphs = font.prepareGlyphs(size, textColor, useTextColor);
 		#end
@@ -1521,7 +1534,7 @@ class BitmapTextField extends Sprite
 		{
 			if (borderGlyphs != null)
 			{
-				borderGlyphs.destroy();
+				borderGlyphs.dispose();
 			}
 			borderGlyphs = font.prepareGlyphs(size, borderColor);
 		}
