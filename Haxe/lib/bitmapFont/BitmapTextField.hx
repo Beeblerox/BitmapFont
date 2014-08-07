@@ -75,10 +75,10 @@ class BitmapTextField extends Sprite
 	
 	/**
 	 * Whether this text field have fixed width or not.
-	 * Default value if false.
+	 * Default value if true.
 	 */
 	@:isVar
-	public var autoSize(default, set):Bool;
+	public var autoSize(default, set):Bool = true;
 	
 	/**
 	 * Number of pixels between text and text field border
@@ -127,8 +127,8 @@ class BitmapTextField extends Sprite
 	
 	/**
 	 * The color of the border in 0xAARRGGBB format
-	 */	
-	public var borderColor(default, set):UInt = 0x00000000;
+	 */
+	public var borderColor(default, set):UInt = 0xFF000000;
 	
 	/**
 	 * The size of the border, in pixels.
@@ -373,7 +373,7 @@ class BitmapTextField extends Sprite
 		
 		_lines = tmp.split("\n");
 		
-		if (autoSize)
+		if (!autoSize)
 		{
 			if (wordWrap)
 			{
@@ -399,19 +399,19 @@ class BitmapTextField extends Sprite
 	 */
 	private function computeTextSize():Void 
 	{
-		var txtWidth:Int = Math.ceil(width);
+		var txtWidth:Int = Math.ceil(_fieldWidth);
 		var txtHeight:Int = Math.ceil(textHeight) + 2 * padding;
 		// need to calculate it here
 		var maxWidth:Int = Math.ceil(textWidth);
 		
-		if (!autoSize)
+		if (autoSize)
 		{
 			txtWidth = maxWidth + 2 * padding;
 		}
 		
 		// TODO: use these vars for pixels dimensions
 		_fieldWidth = (txtWidth == 0) ? 1 : txtWidth;
-		_fieldHeight = txtHeight;
+		_fieldHeight = (txtHeight == 0) ? 1 : txtHeight;
 	}
 	
 	/**
@@ -521,7 +521,7 @@ class BitmapTextField extends Sprite
 				}
 				charWidth += letterSpacing;
 				
-				if (subLineWidth + charWidth > width - 2 * padding)
+				if (subLineWidth + charWidth > _fieldWidth - 2 * padding)
 				{
 					subLine += char;
 					newLines.push(subLine);
@@ -551,7 +551,6 @@ class BitmapTextField extends Sprite
 		// subdivide lines
 		var newLines:Array<String> = [];
 		var words:Array<String>;			// the array of words in the current line
-		
 		for (line in _lines)
 		{
 			words = [];
@@ -703,7 +702,7 @@ class BitmapTextField extends Sprite
 				
 				wordWidth += ((wordLength - 1) * letterSpacing);
 				
-				if (subLineWidth + wordWidth > width - 2 * padding)
+				if (subLineWidth + wordWidth > _fieldWidth - 2 * padding)
 				{
 					if (isSpaceWord)
 					{
@@ -805,7 +804,7 @@ class BitmapTextField extends Sprite
 						charWidth = (font.glyphs.exists(char)) ? font.glyphs.get(char).xadvance * size : 0;
 					}
 					
-					if (subLineWidth + charWidth > width - 2 * padding)
+					if (subLineWidth + charWidth > _fieldWidth - 2 * padding)
 					{
 						if (isSpaceWord) // new line ends with space / tab char, so we push it to sublines array, skip all the rest spaces and start another line
 						{
@@ -856,7 +855,6 @@ class BitmapTextField extends Sprite
 	private function updateGraphic():Void 
 	{
 		computeTextSize();
-		
 		var colorForFill:Int = (background) ? backgroundColor : 0x00000000;
 		#if RENDER_BLIT
 		if (_bitmapData == null || (_fieldWidth != _bitmapData.width || _fieldHeight != _bitmapData.height))
@@ -878,12 +876,12 @@ class BitmapTextField extends Sprite
 		
 		if (colorForFill != 0x00000000)
 		{
-			this.graphics.beginFill(colorForFill);
+			this.graphics.beginFill(colorForFill & 0x00FFFFFF, ((colorForFill >> 24) & 0xFF) / 255);
 			this.graphics.drawRect(0, 0, _fieldWidth, _fieldHeight);
 			this.graphics.endFill();
 		}
 		
-		var colorForBorder:UInt = (borderStyle != TextBorderStyle.NONE) ? borderColor : 0xffffffff;
+		var colorForBorder:UInt = (borderStyle != TextBorderStyle.NONE) ? borderColor : 0xFFFFFFFF;
 		var colorForText:UInt = (useTextColor) ? textColor : 0xFFFFFFFF;
 		
 		_drawData.splice(0, _drawData.length);
@@ -1489,7 +1487,7 @@ class BitmapTextField extends Sprite
 	
 	private function get_textHeight():Float
 	{
-		return lineHeight * _lines.length;
+		return (lineHeight + lineSpacing) * _lines.length - lineSpacing;
 	}
 	
 	private function get_lineHeight():Float

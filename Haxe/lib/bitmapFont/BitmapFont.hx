@@ -396,6 +396,7 @@ class BitmapFont
 		
 		var charRect:Rectangle;
 		var xAdvance:Int = charWidth;
+		font.spaceWidth = xAdvance;
 		var letterIndex:Int = 0;
 		var numLetters:Int = letters.length;
 		
@@ -415,7 +416,6 @@ class BitmapFont
 			}
 		}
 		
-		font.spaceWidth = xAdvance;
 		return font;
 	}
 	
@@ -430,6 +430,8 @@ class BitmapFont
 	 */
 	private function addGlyphFrame(glyph:String, frame:Rectangle, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0):Void
 	{
+		if (frame.width == 0 || frame.height == 0)	return;
+		
 		var glyphFrame:BitmapGlyphFrame = new BitmapGlyphFrame(this);
 		glyphFrame.glyph = glyph;
 		glyphFrame.xoffset = offsetX;
@@ -550,6 +552,8 @@ class BitmapGlyphCollection
 	
 	public var color:UInt;
 	
+	public var useColor:Bool;
+	
 	public var scale:Float;
 	
 	public var spaceWidth:Float = 0;
@@ -563,6 +567,7 @@ class BitmapGlyphCollection
 		this.font = font;
 		this.scale = scale;
 		this.color = (useColor) ? color : 0xFFFFFFFF;
+		this.useColor = useColor;
 		this.minOffsetX = font.minOffsetX * scale;
 		prepareGlyphs();
 	}
@@ -573,7 +578,10 @@ class BitmapGlyphCollection
 		matrix.scale(scale, scale);
 		
 		var colorTransform:ColorTransform = new ColorTransform();
-		colorTransform.color = color;
+		if (useColor)
+		{
+			colorTransform.color = color;
+		}
 		
 		var glyphBD:BitmapData;
 		var preparedBD:BitmapData;
