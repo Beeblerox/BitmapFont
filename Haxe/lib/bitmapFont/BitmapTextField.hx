@@ -291,7 +291,7 @@ class BitmapTextField extends Sprite
 	}
 	
 	/**
-	 * Forces graphic regeneration for this text field.
+	 * Forces graphic regeneration for this text field immediately.
 	 */
 	public function forceGraphicUpdate():Void
 	{

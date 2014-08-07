@@ -11,6 +11,7 @@
 	<!-- classpath, haxe libs -->
 	<classpath name="src" />
 	<haxelib name="openfl" />
+	<haxelib name="bitmapFont" />
 	
 	<!-- assets -->
 	<assets path="assets" include="*" />
