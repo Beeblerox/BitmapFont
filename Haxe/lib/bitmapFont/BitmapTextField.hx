@@ -402,10 +402,11 @@ class BitmapTextField extends Sprite
 		var txtWidth:Int = Math.ceil(_fieldWidth);
 		var txtHeight:Int = Math.ceil(textHeight) + 2 * padding;
 		// need to calculate it here
-		var maxWidth:Int = Math.ceil(textWidth) + 2 * padding;
+		var maxWidth:Int = Math.ceil(textWidth);
 		
 		if (autoSize)
 		{
+			maxWidth = Math.ceil(textWidth) + 2 * padding;
 			txtWidth = (maxWidth > _fieldWidth) ? maxWidth : _fieldWidth;
 		}
 		
