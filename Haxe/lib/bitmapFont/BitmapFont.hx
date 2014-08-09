@@ -552,8 +552,6 @@ class BitmapGlyphCollection
 	
 	public var color:UInt;
 	
-	public var useColor:Bool;
-	
 	public var scale:Float;
 	
 	public var spaceWidth:Float = 0;
@@ -567,7 +565,6 @@ class BitmapGlyphCollection
 		this.font = font;
 		this.scale = scale;
 		this.color = (useColor) ? color : 0xFFFFFFFF;
-		this.useColor = useColor;
 		this.minOffsetX = font.minOffsetX * scale;
 		prepareGlyphs();
 	}
@@ -578,10 +575,10 @@ class BitmapGlyphCollection
 		matrix.scale(scale, scale);
 		
 		var colorTransform:ColorTransform = new ColorTransform();
-		if (useColor)
-		{
-			colorTransform.color = color;
-		}
+		colorTransform.redMultiplier = ((color >> 16) & 0xFF) / 255;
+		colorTransform.greenMultiplier = ((color >> 8) & 0xFF) / 255;
+		colorTransform.redMultiplier = (color & 0xFF) / 255;
+		colorTransform.alphaMultiplier = ((color >> 24) & 0xFF) / 255;
 		
 		var glyphBD:BitmapData;
 		var preparedBD:BitmapData;
