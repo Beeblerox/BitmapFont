@@ -68,7 +68,7 @@ class BitmapTextField extends Sprite
 	
 	/**
 	 * Whether word wrapping algorithm should wrap lines by words or by single character.
-	 * Default value is false which means word wrapping by characters.
+	 * Default value is true.
 	 */
 	@:isVar 
 	public var wrapByWord(default, set):Bool = false;
@@ -406,11 +406,10 @@ class BitmapTextField extends Sprite
 		
 		if (autoSize)
 		{
-			maxWidth = Math.ceil(textWidth) + 2 * padding;
+			maxWidth = maxWidth + 2 * padding;
 			txtWidth = (maxWidth > _fieldWidth) ? maxWidth : _fieldWidth;
 		}
 		
-		// TODO: use these vars for pixels dimensions
 		_fieldWidth = (txtWidth == 0) ? 1 : txtWidth;
 		_fieldHeight = (txtHeight == 0) ? 1 : txtHeight;
 	}
