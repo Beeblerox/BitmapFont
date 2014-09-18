@@ -577,7 +577,7 @@ class BitmapGlyphCollection
 		var colorTransform:ColorTransform = new ColorTransform();
 		colorTransform.redMultiplier = ((color >> 16) & 0xFF) / 255;
 		colorTransform.greenMultiplier = ((color >> 8) & 0xFF) / 255;
-		colorTransform.redMultiplier = (color & 0xFF) / 255;
+		colorTransform.blueMultiplier = (color & 0xFF) / 255;
 		colorTransform.alphaMultiplier = ((color >> 24) & 0xFF) / 255;
 		
 		var glyphBD:BitmapData;
