@@ -4,8 +4,8 @@
 	"license": "MIT",
 	"tags": ["game", "openfl", "flash", "neko", "cpp", "android", "ios", "cross"],
 	"description": "Component for rendering text with bitmap font on all openfl targets.",
-	"releasenote": "Initial release",
-	"version": "0.9.0",
+	"releasenote": "Text width calculation fix",
+	"version": "0.9.2",
 	"contributors": ["Beeblerox"],
 	"dependencies": { "lime": "", "openfl": "" }
 }

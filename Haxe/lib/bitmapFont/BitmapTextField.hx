@@ -447,6 +447,9 @@ class BitmapTextField extends Sprite
 		var char:String; 					// current character in word
 		var charWidth:Float = 0;			// the width of current character
 		
+		var widthPlusOffset:Int = 0;
+		var glyphFrame:BitmapGlyphFrame;
+		
 		for (c in 0...lineLength)
 		{
 			char = str.charAt(c);
@@ -461,7 +464,24 @@ class BitmapTextField extends Sprite
 			}
 			else
 			{
-				charWidth = (font.glyphs.exists(char)) ? font.glyphs.get(char).xadvance * size : 0;
+				if (font.glyphs.exists(char))
+				{
+					glyphFrame = font.glyphs.get(char);
+					charWidth = Math.ceil(glyphFrame.xadvance * size);
+					
+					if (c == (lineLength - 1))
+					{
+						widthPlusOffset = Math.ceil(glyphFrame.xoffset + glyphFrame.bitmap.width); 
+						if (widthPlusOffset > charWidth)
+						{
+							charWidth = widthPlusOffset;
+						}
+					}
+				}
+				else
+				{
+					charWidth = 0;
+				}
 			}
 			
 			lineWidth += (charWidth + letterSpacing);
