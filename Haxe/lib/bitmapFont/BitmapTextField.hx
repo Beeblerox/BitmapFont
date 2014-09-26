@@ -471,7 +471,7 @@ class BitmapTextField extends Sprite
 					
 					if (c == (lineLength - 1))
 					{
-						widthPlusOffset = Math.ceil(glyphFrame.xoffset + glyphFrame.bitmap.width); 
+						widthPlusOffset = Math.ceil((glyphFrame.xoffset + glyphFrame.bitmap.width) * size); 
 						if (widthPlusOffset > charWidth)
 						{
 							charWidth = widthPlusOffset;
