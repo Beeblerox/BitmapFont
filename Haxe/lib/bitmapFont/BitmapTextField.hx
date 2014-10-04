@@ -8,6 +8,7 @@ import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import bitmapFont.BitmapFont;
+import openfl.display.PixelSnapping;
 import openfl.display.Tilesheet;
 
 /**
@@ -18,13 +19,11 @@ class BitmapTextField extends Sprite
 	/**
 	 * Font for text rendering.
 	 */
-	@:isVar
 	public var font(default, set):BitmapFont;
 	
 	/**
 	 * Text to display.
 	 */
-	@:isVar
 	public var text(default, set):String = "";
 	
 	/**
@@ -39,51 +38,43 @@ class BitmapTextField extends Sprite
 	/**
 	 * Specifies how the text field should align text.
 	 */
-	@:isVar
 	public var alignment(default, set):BitmapTextAlign = BitmapTextAlign.LEFT;
 	
 	/**
 	 * The distance to add between lines.
 	 */
-	@:isVar
 	public var lineSpacing(default, set):Int = 0;
 	
 	/**
 	 * The distance to add between letters.
 	 */
-	@:isVar
 	public var letterSpacing(default, set):Int = 0;
 	
 	/**
 	 * Whether to convert text to upper case or not.
 	 */
-	@:isVar
 	public var autoUpperCase(default, set):Bool = false;
 	
 	/**
 	 * A Boolean value that indicates whether the text field has word wrap.
 	 */
-	@:isVar
 	public var wordWrap(default, set):Bool = true;
 	
 	/**
 	 * Whether word wrapping algorithm should wrap lines by words or by single character.
 	 * Default value is true.
-	 */
-	@:isVar 
+	 */ 
 	public var wrapByWord(default, set):Bool = false;
 	
 	/**
 	 * Whether this text field have fixed width or not.
 	 * Default value if true.
 	 */
-	@:isVar
 	public var autoSize(default, set):Bool = true;
 	
 	/**
 	 * Number of pixels between text and text field border
 	 */
-	@:isVar
 	public var padding(default, set):Int = 0;
 	
 	/**
@@ -104,20 +95,17 @@ class BitmapTextField extends Sprite
 	/**
 	 * Number of space characters in one tab.
 	 */
-	@:isVar
 	public var numSpacesInTab(default, set):Int = 4;
 	private var _tabSpaces:String = "    ";
 	
 	/**
 	 * The color of the text in 0xAARRGGBB format.
 	 */
-	@:isVar
 	public var textColor(default, set):UInt = 0xFFFFFFFF;
 	
 	/**
 	 * Whether to use textColor while rendering or not.
 	 */
-	@:isVar
 	public var useTextColor(default, set):Bool = false;
 	
 	/**
@@ -151,32 +139,29 @@ class BitmapTextField extends Sprite
 	/**
 	 * Specifies whether the text should have background
 	 */
-	@:isVar
 	public var background(default, set):Bool = false;
 	
 	/**
 	 * Specifies the color of background in 0xAARRGGBB format.
 	 */
-	@:isVar
 	public var backgroundColor(default, set):UInt = 0x00000000;
 	
 	/**
 	 * Specifies whether the text field will break into multiple lines or not on overflow.
 	 */
-	@:isVar
 	public var multiLine(default, set):Bool = true;
 	
 	/**
 	 * Reflects how many lines have this text field.
 	 */
-	@:isVar
 	public var numLines(get, null):Int = 0;
 	
 	/**
 	 * The "size" (scale) of the font.
 	 */
-	@:isVar
 	public var size(default, set):Float = 1;
+	
+	public var smoothing(default, set):Bool;
 	
 	/**
 	 * Whether graphics/bitmapdata of this text field should be updated immediately after each setter call.
@@ -186,7 +171,6 @@ class BitmapTextField extends Sprite
 	 * make all operations with this text field (change text color, size, border style, etc.).
 	 * and then set updateImmediately back to true which will immediately update graphics of this text field. 
 	 */
-	@:isVar
 	public var updateImmediately(default, set):Bool = true;
 	
 	private var _pendingTextChange:Bool = true;
@@ -222,15 +206,16 @@ class BitmapTextField extends Sprite
 	 * @param font	optional parameter for component's font prop
 	 * @param text	optional parameter for component's text
 	 */
-	public function new(?font:BitmapFont, text:String = "") 
+	public function new(?font:BitmapFont, text:String = "", pixelSnapping:PixelSnapping = null, smoothing:Bool = false)
 	{
 		super();
 		
 		shadowOffset = new Point(1, 1);
 		
 		#if RENDER_BLIT
+		pixelSnapping = (pixelSnapping == null) ? PixelSnapping.AUTO : pixelSnapping;
 		_bitmapData = new BitmapData(_fieldWidth, _fieldHeight, true, 0x00000000);
-		_bitmap = new Bitmap(_bitmapData);
+		_bitmap = new Bitmap(_bitmapData, pixelSnapping, smoothing);
 		addChild(_bitmap);
 		_point = new Point();
 		#else
@@ -244,6 +229,7 @@ class BitmapTextField extends Sprite
 		
 		this.font = font;
 		this.text = text;
+		this.smoothing = smoothing;
 	}
 	
 	/**
@@ -1086,7 +1072,7 @@ class BitmapTextField extends Sprite
 			#if RENDER_BLIT
 			_bitmapData.unlock();
 			#else
-			font.tilesheet.drawTiles(this.graphics, _drawData, false, Tilesheet.TILE_SCALE | Tilesheet.TILE_RGB | Tilesheet.TILE_ALPHA);
+			font.tilesheet.drawTiles(this.graphics, _drawData, smoothing, Tilesheet.TILE_SCALE | Tilesheet.TILE_RGB | Tilesheet.TILE_ALPHA);
 			#end
 		}
 		
@@ -1527,6 +1513,21 @@ class BitmapTextField extends Sprite
 		}
 		
 		return value;
+	}
+	
+	private function set_smoothing(value:Bool):Bool
+	{
+		#if RENDER_BLIT
+		_bitmap.smoothing = value;
+		#else
+		if (smoothing != value)
+		{
+			_pendingGraphicChange = true;
+			checkImmediateChanges();
+		}
+		#end
+		
+		return smoothing = value;
 	}
 	
 	private function updateTextGlyphs():Void
