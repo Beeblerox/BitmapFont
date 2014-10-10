@@ -1551,7 +1551,7 @@ class BitmapTextField extends Sprite
 		{
 			textGlyphs.dispose();
 		}
-		textGlyphs = font.prepareGlyphs(size, textColor, useTextColor);
+		textGlyphs = font.prepareGlyphs(size, textColor, useTextColor, smoothing);
 		#end
 		
 		_pendingTextGlyphsChange = false;
@@ -1567,7 +1567,7 @@ class BitmapTextField extends Sprite
 			{
 				borderGlyphs.dispose();
 			}
-			borderGlyphs = font.prepareGlyphs(size, borderColor);
+			borderGlyphs = font.prepareGlyphs(size, borderColor, true, smoothing);
 		}
 		#end
 		

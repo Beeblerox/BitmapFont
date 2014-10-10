@@ -503,7 +503,7 @@ class BitmapFont
 	 * @param	useColor	Whether to use color transformation for glyphs.
 	 * @return	Generated collection of BitmapGlyph objects. They are used for rendering text and borders in RENDER_BLIT mode.
 	 */
-	public function prepareGlyphs(scale:Float, color:UInt, useColor:Bool = true):BitmapGlyphCollection
+	public function prepareGlyphs(scale:Float, color:UInt, useColor:Bool = true, smoothing:Bool = true):BitmapGlyphCollection
 	{
 		return new BitmapGlyphCollection(this, scale, color, useColor);
 	}
@@ -604,7 +604,7 @@ class BitmapGlyphCollection
 	
 	public var font:BitmapFont;
 	
-	public function new(font:BitmapFont, scale:Float, color:UInt, useColor:Bool = true)
+	public function new(font:BitmapFont, scale:Float, color:UInt, useColor:Bool = true, smoothing:Bool = true)
 	{
 		glyphMap = new Map<Int, BitmapGlyph>();
 		glyphs = new Array<BitmapGlyph>();
@@ -612,10 +612,10 @@ class BitmapGlyphCollection
 		this.scale = scale;
 		this.color = (useColor) ? color : 0xFFFFFFFF;
 		this.minOffsetX = font.minOffsetX * scale;
-		prepareGlyphs();
+		prepareGlyphs(smoothing);
 	}
 	
-	private function prepareGlyphs():Void
+	private function prepareGlyphs(smoothing:Bool = true):Void
 	{
 		var matrix:Matrix = new Matrix();
 		matrix.scale(scale, scale);
@@ -648,9 +648,9 @@ class BitmapGlyphCollection
 			preparedBD = new BitmapData(bdWidth, bdHeight, true, 0x00000000);
 			
 			#if !js
-			preparedBD.draw(glyphBD, matrix, colorTransform);
+			preparedBD.draw(glyphBD, matrix, colorTransform, null, null, smoothing);
 			#else
-			preparedBD.draw(glyphBD, matrix);
+			preparedBD.draw(glyphBD, matrix, null, null, null, smoothing);
 			preparedBD.colorTransform(preparedBD.rect, colorTransform);
 			#end
 			

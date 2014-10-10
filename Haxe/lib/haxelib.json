@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"tags": ["game", "openfl", "flash", "neko", "cpp", "android", "ios", "cross"],
 	"description": "Component for rendering text with bitmap font on all openfl targets.",
-	"releasenote": "angel code parsing fix, changing the way of storing font glyphs, fixes for rendering on html5 target",
+	"releasenote": "angel code parsing fix, changing the way of storing font glyphs, added text smoothing, fixes for rendering on html5 target",
 	"version": "0.9.3",
 	"contributors": ["Beeblerox"],
 	"dependencies": { "lime": "", "openfl": "" }
