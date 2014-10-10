@@ -505,7 +505,7 @@ class BitmapFont
 	 */
 	public function prepareGlyphs(scale:Float, color:UInt, useColor:Bool = true, smoothing:Bool = true):BitmapGlyphCollection
 	{
-		return new BitmapGlyphCollection(this, scale, color, useColor);
+		return new BitmapGlyphCollection(this, scale, color, useColor, smoothing);
 	}
 	#end
 }
