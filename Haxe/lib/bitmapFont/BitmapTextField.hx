@@ -431,6 +431,7 @@ class BitmapTextField extends Sprite
 		var lineWidth:Float = Math.abs(font.minOffsetX) * size;
 		
 		var char:String; 					// current character in word
+		var charCode:Int;
 		var charWidth:Float = 0;			// the width of current character
 		
 		var widthPlusOffset:Int = 0;
@@ -439,6 +440,7 @@ class BitmapTextField extends Sprite
 		for (c in 0...lineLength)
 		{
 			char = str.charAt(c);
+			charCode = char.charCodeAt(0);
 			
 			if (char == ' ')
 			{
@@ -450,9 +452,9 @@ class BitmapTextField extends Sprite
 			}
 			else
 			{
-				if (font.glyphs.exists(char))
+				if (font.glyphs.exists(charCode))
 				{
-					glyphFrame = font.glyphs.get(char);
+					glyphFrame = font.glyphs.get(charCode);
 					charWidth = Math.ceil(glyphFrame.xadvance * size);
 					
 					if (c == (lineLength - 1))
@@ -492,6 +494,7 @@ class BitmapTextField extends Sprite
 		
 		var c:Int;					// char index
 		var char:String; 			// current character in word
+		var charCode:Int;
 		var charWidth:Float = 0;	// the width of current character
 		
 		var subLine:String;			// current subline to assemble
@@ -512,6 +515,7 @@ class BitmapTextField extends Sprite
 			while (c < lineLength)
 			{
 				char = line.charAt(c);
+				charCode = char.charCodeAt(0);
 				
 				if (char == ' ')
 				{
@@ -523,7 +527,7 @@ class BitmapTextField extends Sprite
 				}
 				else
 				{
-					charWidth = (font.glyphs.exists(char)) ? font.glyphs.get(char).xadvance * size : 0;
+					charWidth = (font.glyphs.exists(charCode)) ? font.glyphs.get(charCode).xadvance * size : 0;
 				}
 				charWidth += letterSpacing;
 				
@@ -660,6 +664,7 @@ class BitmapTextField extends Sprite
 		var isSpaceWord:Bool = false; 		// whether current word consists of spaces or not
 		
 		var char:String; 					// current character in word
+		var charCode:Int;
 		var charWidth:Float = 0;			// the width of current character
 		
 		var subLines:Array<String> = [];	// helper array for subdividing lines
@@ -689,6 +694,7 @@ class BitmapTextField extends Sprite
 				for (c in 0...wordLength)
 				{
 					char = word.charAt(c);
+					charCode = char.charCodeAt(0);
 					
 					if (char == ' ')
 					{
@@ -700,7 +706,7 @@ class BitmapTextField extends Sprite
 					}
 					else
 					{
-						charWidth = (font.glyphs.exists(char)) ? font.glyphs.get(char).xadvance * size : 0;
+						charWidth = (font.glyphs.exists(charCode)) ? font.glyphs.get(charCode).xadvance * size : 0;
 					}
 					
 					wordWidth += charWidth;
@@ -765,6 +771,7 @@ class BitmapTextField extends Sprite
 		var isSpaceWord:Bool = false; 		// whether current word consists of spaces or not
 		
 		var char:String; 					// current character in word
+		var charCode:Int;
 		var c:Int;							// char index
 		var charWidth:Float = 0;			// the width of current character
 		
@@ -796,6 +803,7 @@ class BitmapTextField extends Sprite
 				while (c < wordLength)
 				{
 					char = word.charAt(c);
+					charCode = char.charCodeAt(0);
 					
 					if (char == ' ')
 					{
@@ -807,7 +815,7 @@ class BitmapTextField extends Sprite
 					}
 					else
 					{
-						charWidth = (font.glyphs.exists(char)) ? font.glyphs.get(char).xadvance * size : 0;
+						charWidth = (font.glyphs.exists(charCode)) ? font.glyphs.get(charCode).xadvance * size : 0;
 					}
 					
 					if (subLineWidth + charWidth > _fieldWidth - 2 * padding)
@@ -1086,6 +1094,7 @@ class BitmapTextField extends Sprite
 		
 		var glyph:BitmapGlyph;
 		var char:String;
+		var charCode:Int;
 		var curX:Int = startX;
 		var curY:Int = startY;
 		
@@ -1097,6 +1106,7 @@ class BitmapTextField extends Sprite
 		for (i in 0...lineLength)
 		{
 			char = line.charAt(i);
+			charCode = char.charCodeAt(0);
 			
 			if (char == ' ')
 			{
@@ -1108,7 +1118,7 @@ class BitmapTextField extends Sprite
 			}
 			else
 			{
-				glyph = glyphs.glyphMap.get(char);
+				glyph = glyphs.glyphMap.get(charCode);
 				if (glyph != null)
 				{
 					_point.x = curX + glyph.offsetX;
@@ -1126,6 +1136,7 @@ class BitmapTextField extends Sprite
 	{
 		var glyph:BitmapGlyphFrame;
 		var char:String;
+		var charCode:Int;
 		var curX:Float = startX;
 		var curY:Int = startY;
 		
@@ -1144,6 +1155,7 @@ class BitmapTextField extends Sprite
 		for (i in 0...lineLength)
 		{
 			char = line.charAt(i);
+			charCode = char.charCodeAt(0);
 			
 			if (char == ' ')
 			{
@@ -1155,7 +1167,7 @@ class BitmapTextField extends Sprite
 			}
 			else
 			{
-				glyph = font.glyphs.get(char);
+				glyph = font.glyphs.get(charCode);
 				if (glyph != null)
 				{
 					_drawData[pos++] = curX + glyph.xoffset * size;

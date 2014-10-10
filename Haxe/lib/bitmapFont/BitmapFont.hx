@@ -119,7 +119,7 @@ class BitmapFont
 	 */
 	public var bitmap:BitmapData;
 	
-	public var glyphs:Map<String, BitmapGlyphFrame>;
+	public var glyphs:Map<Int, BitmapGlyphFrame>;
 	
 	#if RENDER_TILE
 	public var tilesheet:Tilesheet;
@@ -135,7 +135,7 @@ class BitmapFont
 		#if RENDER_TILE
 		tilesheet = new Tilesheet(bitmap);
 		#end
-		glyphs = new Map<String, BitmapGlyphFrame>();
+		glyphs = new Map<Int, BitmapGlyphFrame>();
 		BitmapFont.store(name, this);
 	}
 	
@@ -186,7 +186,10 @@ class BitmapFont
 		
 		var frame:Rectangle;
 		var glyph:String;
+		var charCode:Int;
+		var spaceCharCode:Int = " ".charCodeAt(0);
 		var xOffset:Int, yOffset:Int, xAdvance:Int;
+		var frameHeight:Int;
 		
 		var chars = fast.node.chars;
 		
@@ -196,7 +199,8 @@ class BitmapFont
 			frame.x = Std.parseInt(char.att.x);
 			frame.y = Std.parseInt(char.att.y);
 			frame.width = Std.parseInt(char.att.width);
-			frame.height = Std.parseInt(char.att.height);
+			frameHeight = Std.parseInt(char.att.height);
+			frame.height = frameHeight;
 			
 			xOffset = char.has.xoffset ? Std.parseInt(char.att.xoffset) : 0;
 			yOffset = char.has.yoffset ? Std.parseInt(char.att.yoffset) : 0;
@@ -205,6 +209,7 @@ class BitmapFont
 			font.minOffsetX = (font.minOffsetX > xOffset) ? xOffset : font.minOffsetX;
 			
 			glyph = null;
+			charCode = -1;
 			
 			if (char.has.letter)
 			{
@@ -212,29 +217,38 @@ class BitmapFont
 			}
 			else if (char.has.id)
 			{
-				glyph = String.fromCharCode(Std.parseInt(char.att.id));
+				charCode = Std.parseInt(char.att.id);
 			}
 			
-			if (glyph == null) 
+			if (charCode == -1 && glyph == null) 
 			{
 				throw 'Invalid font xml data!';
 			}
 			
-			glyph = switch(glyph) 
+			if (glyph != null)
 			{
-				case "space": ' ';
-				case "&quot;": '"';
-				case "&amp;": '&';
-				case "&gt;": '>';
-				case "&lt;": '<';
-				default: glyph;
+				glyph = switch(glyph) 
+				{
+					case "space": ' ';
+					case "&quot;": '"';
+					case "&amp;": '&';
+					case "&gt;": '>';
+					case "&lt;": '<';
+					default: glyph;
+				}
+				
+				charCode = glyph.charCodeAt(0);
 			}
 			
-			font.addGlyphFrame(glyph, frame, xOffset, yOffset, xAdvance);
+			font.addGlyphFrame(charCode, frame, xOffset, yOffset, xAdvance);
 			
-			if (glyph == ' ')
+			if (charCode == spaceCharCode)
 			{
 				font.spaceWidth = xAdvance;
+			}
+			else
+			{
+				font.lineHeight = (font.lineHeight > frameHeight + yOffset) ? font.lineHeight : frameHeight + yOffset;
 			}
 		}
 		
@@ -270,7 +284,8 @@ class BitmapFont
 		var cy:Int = 0;
 		var cx:Int;
 		var letterIdx:Int = 0;
-		var glyph:String;
+		var charCode:Int;
+		var spaceCharCode:Int = " ".charCodeAt(0);
 		var numLetters:Int = letters.length;
 		var rect:Rectangle;
 		var xAdvance:Int;
@@ -295,15 +310,15 @@ class BitmapFont
 					var gw:Int = gx - cx;
 					var gh:Int = gy - cy;
 					
-					glyph = letters.charAt(letterIdx);
+					charCode = letters.charCodeAt(letterIdx);
 					
 					rect = new Rectangle(cx, cy, gw, gh);
 					
 					xAdvance = gw;
 					
-					font.addGlyphFrame(glyph, rect, 0, 0, xAdvance);
+					font.addGlyphFrame(charCode, rect, 0, 0, xAdvance);
 					
-					if (glyph == ' ')
+					if (charCode == spaceCharCode)
 					{
 						font.spaceWidth = xAdvance;
 					}
@@ -329,14 +344,46 @@ class BitmapFont
 		// remove background color
 		POINT.x = POINT.y = 0;
 		var bgColor32:Int = bmd.getPixel32(0, 0);
+		#if !js
 		bmd.threshold(bmd, bmd.rect, POINT, "==", bgColor32, 0x00000000, 0xFFFFFFFF, true);
-		
+		#else
+		replaceColor(bmd, bgColor32, 0x00000000);
+		#end
 		if (glyphBGColor != 0x00000000)
 		{
+			#if !js
 			bmd.threshold(bmd, bmd.rect, POINT, "==", glyphBGColor, 0x00000000, 0xFFFFFFFF, true);
+			#else
+			replaceColor(bmd, glyphBGColor, 0x00000000);
+			#end
 		}
 		
 		return font;
+	}
+	
+	public static function replaceColor(bitmapData:BitmapData, color:Int, newColor:Int):BitmapData
+	{
+		var row:Int = 0;
+		var column:Int = 0;
+		var rows:Int = bitmapData.height;
+		var columns:Int = bitmapData.width;
+		bitmapData.lock();
+		while (row < rows)
+		{
+			column = 0;
+			while (column < columns)
+			{
+				if (bitmapData.getPixel32(column, row) == cast color)
+				{
+					bitmapData.setPixel32(column, row, newColor);
+				}
+				column++;
+			}
+			row++;
+		}
+		bitmapData.unlock();
+		
+		return bitmapData;
 	}
 	
 	/**
@@ -405,7 +452,7 @@ class BitmapFont
 			for (i in 0...(numCols))
 			{
 				charRect = new Rectangle(startX + i * spacedWidth, startY + j * spacedHeight, charWidth, charHeight);
-				font.addGlyphFrame(letters.charAt(letterIndex), charRect, 0, 0, xAdvance);
+				font.addGlyphFrame(letters.charCodeAt(letterIndex), charRect, 0, 0, xAdvance);
 				
 				letterIndex++;
 				
@@ -422,18 +469,18 @@ class BitmapFont
 	/**
 	 * Internal method which creates and add glyph frames into this font.
 	 * 
-	 * @param	glyph			Letter for glyph frame.
+	 * @param	charCode		Char code for glyph frame.
 	 * @param	frame			Glyph area from source image.
 	 * @param	offsetX			X offset before rendering this glyph.
 	 * @param	offsetX			Y offset before rendering this glyph.
 	 * @param	xAdvance		How much cursor will jump after this glyph.
 	 */
-	private function addGlyphFrame(glyph:String, frame:Rectangle, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0):Void
+	private function addGlyphFrame(charCode:Int, frame:Rectangle, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0):Void
 	{
-		if (frame.width == 0 || frame.height == 0)	return;
+		if (frame.width == 0 || frame.height == 0 || glyphs.get(charCode) != null)	return;
 		
 		var glyphFrame:BitmapGlyphFrame = new BitmapGlyphFrame(this);
-		glyphFrame.glyph = glyph;
+		glyphFrame.charCode = charCode;
 		glyphFrame.xoffset = offsetX;
 		glyphFrame.yoffset = offsetY;
 		glyphFrame.xadvance = xAdvance;
@@ -443,7 +490,7 @@ class BitmapFont
 		glyphFrame.tileID = tilesheet.addTileRect(frame, new Point(0, 0));
 		#end
 		
-		glyphs.set(glyph, glyphFrame);
+		glyphs.set(charCode, glyphFrame);
 	}
 	
 	#if RENDER_BLIT
@@ -473,7 +520,7 @@ class BitmapGlyphFrame
 	 */
 	public var parent:BitmapFont;
 	
-	public var glyph:String;
+	public var charCode:Int;
 	
 	/**
 	 * x offset to draw symbol with
@@ -515,7 +562,6 @@ class BitmapGlyphFrame
 	public function dispose():Void
 	{
 		rect = null;
-		glyph = null;
 		
 		if (_bitmap != null)
 		{
@@ -546,7 +592,7 @@ class BitmapGlyphCollection
 {
 	public var minOffsetX:Float = 0;
 	
-	public var glyphMap:Map<String, BitmapGlyph>;
+	public var glyphMap:Map<Int, BitmapGlyph>;
 	
 	public var glyphs:Array<BitmapGlyph>;
 	
@@ -560,7 +606,7 @@ class BitmapGlyphCollection
 	
 	public function new(font:BitmapFont, scale:Float, color:UInt, useColor:Bool = true)
 	{
-		glyphMap = new Map<String, BitmapGlyph>();
+		glyphMap = new Map<Int, BitmapGlyph>();
 		glyphs = new Array<BitmapGlyph>();
 		this.font = font;
 		this.scale = scale;
@@ -600,16 +646,22 @@ class BitmapGlyphCollection
 			bdHeight = (bdHeight > 0) ? bdHeight : 1;
 			
 			preparedBD = new BitmapData(bdWidth, bdHeight, true, 0x00000000);
+			
+			#if !js
 			preparedBD.draw(glyphBD, matrix, colorTransform);
+			#else
+			preparedBD.draw(glyphBD, matrix);
+			preparedBD.colorTransform(preparedBD.rect, colorTransform);
+			#end
 			
 			offsetX = Math.ceil(glyph.xoffset * scale);
 			offsetY = Math.ceil(glyph.yoffset * scale);
 			xAdvance = Math.ceil(glyph.xadvance * scale);
 			
-			preparedGlyph = new BitmapGlyph(glyph.glyph, preparedBD, offsetX, offsetY, xAdvance);
+			preparedGlyph = new BitmapGlyph(glyph.charCode, preparedBD, offsetX, offsetY, xAdvance);
 			
 			glyphs.push(preparedGlyph);
-			glyphMap.set(preparedGlyph.glyph, preparedGlyph);
+			glyphMap.set(preparedGlyph.charCode, preparedGlyph);
 		}
 	}
 	
@@ -635,7 +687,7 @@ class BitmapGlyphCollection
  */
 class BitmapGlyph
 {
-	public var glyph:String;
+	public var charCode:Int;
 	
 	public var bitmap:BitmapData;
 	
@@ -647,9 +699,9 @@ class BitmapGlyph
 	
 	public var rect:Rectangle;
 	
-	public function new(glyph:String, bmd:BitmapData, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0)
+	public function new(charCode:Int, bmd:BitmapData, offsetX:Int = 0, offsetY:Int = 0, xAdvance:Int = 0)
 	{
-		this.glyph = glyph;
+		this.charCode = charCode;
 		this.bitmap = bmd;
 		this.offsetX = offsetX;
 		this.offsetY = offsetY;
@@ -665,6 +717,5 @@ class BitmapGlyph
 		}
 		
 		bitmap = null;
-		glyph = null;
 	}
 }
