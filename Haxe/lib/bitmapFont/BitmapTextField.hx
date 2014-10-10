@@ -880,6 +880,7 @@ class BitmapTextField extends Sprite
 			
 			_bitmapData = new BitmapData(_fieldWidth, _fieldHeight, true, colorForFill);
 			_bitmap.bitmapData = _bitmapData;
+			_bitmap.smoothing = smoothing;
 		}
 		else 
 		{
