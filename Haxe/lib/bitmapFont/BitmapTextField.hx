@@ -8,6 +8,7 @@ import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import bitmapFont.BitmapFont;
+import haxe.Utf8;
 import openfl.display.PixelSnapping;
 import openfl.display.Tilesheet;
 
@@ -64,7 +65,7 @@ class BitmapTextField extends Sprite
 	 * Whether word wrapping algorithm should wrap lines by words or by single character.
 	 * Default value is true.
 	 */ 
-	public var wrapByWord(default, set):Bool = false;
+	public var wrapByWord(default, set):Bool = true;
 	
 	/**
 	 * Whether this text field have fixed width or not.
@@ -224,7 +225,7 @@ class BitmapTextField extends Sprite
 		
 		if (font == null)
 		{
-			font = DefaultBitmapFont.getDefaultFont();
+			font = BitmapFont.getDefaultFont();
 		}
 		
 		this.font = font;
@@ -387,13 +388,16 @@ class BitmapTextField extends Sprite
 	{
 		var txtWidth:Int = Math.ceil(_fieldWidth);
 		var txtHeight:Int = Math.ceil(textHeight) + 2 * padding;
-		// need to calculate it here
-		var maxWidth:Int = Math.ceil(textWidth);
+		
+		var tw:Int = Math.ceil(textWidth);
 		
 		if (autoSize)
 		{
-			maxWidth = maxWidth + 2 * padding;
-			txtWidth = (maxWidth > _fieldWidth) ? maxWidth : _fieldWidth;
+			txtWidth = tw + 2 * padding;
+		}
+		else
+		{
+			txtWidth = Math.ceil(_fieldWidth);
 		}
 		
 		_fieldWidth = (txtWidth == 0) ? 1 : txtWidth;
@@ -424,13 +428,12 @@ class BitmapTextField extends Sprite
 	 */
 	public function getStringWidth(str:String):Float
 	{
-		var spaceWidth:Float = font.spaceWidth * size;
-		var tabWidth:Float = spaceWidth * numSpacesInTab;
+		var spaceWidth:Float = Math.ceil(font.spaceWidth * size);
+		var tabWidth:Float = Math.ceil(spaceWidth * numSpacesInTab);
 		
-		var lineLength:Int = str.length;	// lenght of the current line
-		var lineWidth:Float = Math.abs(font.minOffsetX) * size;
+		var lineLength:Int = Utf8.length(str);	// lenght of the current line
+		var lineWidth:Float = Math.ceil(Math.abs(font.minOffsetX) * size);
 		
-		var char:String; 					// current character in word
 		var charCode:Int;
 		var charWidth:Float = 0;			// the width of current character
 		
@@ -439,14 +442,13 @@ class BitmapTextField extends Sprite
 		
 		for (c in 0...lineLength)
 		{
-			char = str.charAt(c);
-			charCode = char.charCodeAt(0);
+			charCode = Utf8.charCodeAt(str, c);
 			
-			if (char == ' ')
+			if (charCode == BitmapFont.spaceCode)
 			{
 				charWidth = spaceWidth;
 			}
-			else if (char == '\t')
+			else if (charCode == BitmapFont.tabCode)
 			{
 				charWidth = tabWidth;
 			}
@@ -497,7 +499,7 @@ class BitmapTextField extends Sprite
 		var charCode:Int;
 		var charWidth:Float = 0;	// the width of current character
 		
-		var subLine:String;			// current subline to assemble
+		var subLine:Utf8;			// current subline to assemble
 		var subLineWidth:Float;		// the width of current subline
 		
 		var spaceWidth:Float = font.spaceWidth * size;
@@ -507,21 +509,20 @@ class BitmapTextField extends Sprite
 		
 		for (line in _lines)
 		{
-			lineLength = line.length;
-			subLine = "";
+			lineLength = Utf8.length(line);
+			subLine = new Utf8();
 			subLineWidth = startX;
 			
 			c = 0;
 			while (c < lineLength)
 			{
-				char = line.charAt(c);
-				charCode = char.charCodeAt(0);
+				charCode = Utf8.charCodeAt(line, c);
 				
-				if (char == ' ')
+				if (charCode == BitmapFont.spaceCode)
 				{
 					charWidth = spaceWidth;
 				}
-				else if (char == '\t')
+				else if (charCode == BitmapFont.tabCode)
 				{
 					charWidth = tabWidth;
 				}
@@ -533,15 +534,15 @@ class BitmapTextField extends Sprite
 				
 				if (subLineWidth + charWidth > _fieldWidth - 2 * padding)
 				{
-					subLine += char;
-					newLines.push(subLine);
-					subLine = "";
+					subLine.addChar(charCode);
+					newLines.push(subLine.toString());
+					subLine = new Utf8();
 					subLineWidth = startX;
 					c = lineLength;
 				}
 				else
 				{
-					subLine += char;
+					subLine.addChar(charCode);
 					subLineWidth += charWidth;
 				}
 				
@@ -561,6 +562,7 @@ class BitmapTextField extends Sprite
 		// subdivide lines
 		var newLines:Array<String> = [];
 		var words:Array<String>;			// the array of words in the current line
+		
 		for (line in _lines)
 		{
 			words = [];
@@ -589,62 +591,70 @@ class BitmapTextField extends Sprite
 	private function splitLineIntoWords(line:String, words:Array<String>):Void
 	{
 		var word:String = "";				// current word to process
+		var wordUtf8:Utf8 = new Utf8();
 		var isSpaceWord:Bool = false; 		// whether current word consists of spaces or not
-		var lineLength:Int = line.length;	// lenght of the current line
+		var lineLength:Int = Utf8.length(line);	// lenght of the current line
+		
+		var hyphenCode:Int = Utf8.charCodeAt('-', 0);
 		
 		var c:Int = 0;						// char index on the line
-		var char:String; 					// current character in word
+		var charCode:Int; 					// code for the current character in word
+		var charUtf8:Utf8;
 		
 		while (c < lineLength)
 		{
-			char = line.charAt(c);
-			switch(char)
+			charCode = Utf8.charCodeAt(line, c);
+			word = wordUtf8.toString();
+			
+			if (charCode == BitmapFont.spaceCode || charCode == BitmapFont.tabCode)
 			{
-				case ' ', '\t': {
-					if (!isSpaceWord)
-					{
-						isSpaceWord = true;
-						
-						if (word != "")
-						{
-							words.push(word);
-							word = "";
-						}
-					}
+				if (!isSpaceWord)
+				{
+					isSpaceWord = true;
 					
-					word += char;
-				}
-				case '-': {
-					if (isSpaceWord && word != "")
+					if (word != "")
 					{
-						isSpaceWord = false;
 						words.push(word);
-						words.push(char);
+						wordUtf8 = new Utf8();
 					}
-					else if (isSpaceWord == false)
-					{
-						words.push(word + char);
-					}
-					
-					word = "";
 				}
-				default: {
-					if (isSpaceWord && word != "")
-					{
-						isSpaceWord = false;
-						words.push(word);
-						word = "";
-					}
-					
-					word += char;
+				
+				wordUtf8.addChar(charCode);
+			}
+			else if (charCode == hyphenCode)
+			{
+				if (isSpaceWord && word != "")
+				{
+					isSpaceWord = false;
+					words.push(word);
+					words.push('-');
 				}
+				else if (isSpaceWord == false)
+				{
+					charUtf8 = new Utf8();
+					charUtf8.addChar(charCode);
+					words.push(word + charUtf8.toString());
+				}
+				
+				wordUtf8 = new Utf8();
+			}
+			else
+			{
+				if (isSpaceWord && word != "")
+				{
+					isSpaceWord = false;
+					words.push(word);
+					wordUtf8 = new Utf8();
+				}
+				
+				wordUtf8.addChar(charCode);
 			}
 			
 			c++;
 		}
 		
+		word = wordUtf8.toString();
 		if (word != "") words.push(word);
-		
 	}
 	
 	/**
@@ -663,7 +673,6 @@ class BitmapTextField extends Sprite
 		
 		var isSpaceWord:Bool = false; 		// whether current word consists of spaces or not
 		
-		var char:String; 					// current character in word
 		var charCode:Int;
 		var charWidth:Float = 0;			// the width of current character
 		
@@ -687,20 +696,20 @@ class BitmapTextField extends Sprite
 			{
 				wordWidth = 0;
 				word = words[w];
-				wordLength = word.length;
+				wordLength = Utf8.length(word);
 				
-				isSpaceWord = (word.charAt(0) == ' ' || word.charAt(0) == '\t');
+				charCode = Utf8.charCodeAt(word, 0);
+				isSpaceWord = (charCode == BitmapFont.spaceCode || charCode == BitmapFont.tabCode);
 				
 				for (c in 0...wordLength)
 				{
-					char = word.charAt(c);
-					charCode = char.charCodeAt(0);
+					charCode = Utf8.charCodeAt(word, c);
 					
-					if (char == ' ')
+					if (charCode == BitmapFont.spaceCode)
 					{
 						charWidth = spaceWidth;
 					}
-					else if (char == '\t')
+					else if (charCode == BitmapFont.tabCode)
 					{
 						charWidth = tabWidth;
 					}
@@ -778,6 +787,7 @@ class BitmapTextField extends Sprite
 		var subLines:Array<String> = [];	// helper array for subdividing lines
 		
 		var subLine:String;					// current subline to assemble
+		var subLineUtf8:Utf8;
 		var subLineWidth:Float;				// the width of current subline
 		
 		var spaceWidth:Float = font.spaceWidth * size;
@@ -789,27 +799,27 @@ class BitmapTextField extends Sprite
 		{
 			w = 0;
 			subLineWidth = startX;
-			subLine = "";
+			subLineUtf8 = new Utf8();
 			
 			while (w < numWords)
 			{
 				word = words[w];
-				wordLength = word.length;
+				wordLength = Utf8.length(word);
 				
-				isSpaceWord = (word.charAt(0) == ' ' || word.charAt(0) == '\t');
+				charCode = Utf8.charCodeAt(word, 0);
+				isSpaceWord = (charCode == BitmapFont.spaceCode || charCode == BitmapFont.tabCode);
 				
 				c = 0;
 				
 				while (c < wordLength)
 				{
-					char = word.charAt(c);
-					charCode = char.charCodeAt(0);
+					charCode = Utf8.charCodeAt(word, c);
 					
-					if (char == ' ')
+					if (charCode == BitmapFont.spaceCode)
 					{
 						charWidth = spaceWidth;
 					}
-					else if (char == '\t')
+					else if (charCode == BitmapFont.tabCode)
 					{
 						charWidth = tabWidth;
 					}
@@ -820,28 +830,32 @@ class BitmapTextField extends Sprite
 					
 					if (subLineWidth + charWidth > _fieldWidth - 2 * padding)
 					{
+						subLine = subLineUtf8.toString();
+						
 						if (isSpaceWord) // new line ends with space / tab char, so we push it to sublines array, skip all the rest spaces and start another line
 						{
 							subLines.push(subLine);
 							c = wordLength;
-							subLine = "";
+							subLineUtf8 = new Utf8();
 							subLineWidth = startX;
 						}
 						else if (subLine != "") // new line isn't empty so we should add it to sublines array and start another one
 						{
 							subLines.push(subLine);
-							subLine = char;
+							subLineUtf8 = new Utf8();
+							subLineUtf8.addChar(charCode);
 							subLineWidth = startX + charWidth + letterSpacing;
 						}
 						else	// the line is too tight to hold even one glyph
 						{
-							subLine = char;
+							subLineUtf8 = new Utf8();
+							subLineUtf8.addChar(charCode);
 							subLineWidth = startX + charWidth + letterSpacing;
 						}
 					}
 					else
 					{
-						subLine += char;
+						subLineUtf8.addChar(charCode);
 						subLineWidth += (charWidth + letterSpacing);
 					}
 					
@@ -850,6 +864,8 @@ class BitmapTextField extends Sprite
 				
 				w++;
 			}
+			
+			subLine = subLineUtf8.toString();
 			
 			if (subLine != "")
 			{
@@ -1094,7 +1110,6 @@ class BitmapTextField extends Sprite
 		if (glyphs == null) return;
 		
 		var glyph:BitmapGlyph;
-		var char:String;
 		var charCode:Int;
 		var curX:Int = startX;
 		var curY:Int = startY;
@@ -1102,18 +1117,17 @@ class BitmapTextField extends Sprite
 		var spaceWidth:Int = Std.int(font.spaceWidth * size);
 		var tabWidth:Int = Std.int(spaceWidth * numSpacesInTab);
 		
-		var lineLength:Int = line.length;
+		var lineLength:Int = Utf8.length(line);
 		
 		for (i in 0...lineLength)
 		{
-			char = line.charAt(i);
-			charCode = char.charCodeAt(0);
+			charCode = Utf8.charCodeAt(line, i);
 			
-			if (char == ' ')
+			if (charCode == BitmapFont.spaceCode)
 			{
 				curX += spaceWidth;
 			}
-			else if (char == '\t')
+			else if (charCode == BitmapFont.tabCode)
 			{
 				curX += tabWidth;
 			}
@@ -1136,7 +1150,6 @@ class BitmapTextField extends Sprite
 	private function renderLine(line:String, color:UInt, startX:Int, startY:Int):Void
 	{
 		var glyph:BitmapGlyphFrame;
-		var char:String;
 		var charCode:Int;
 		var curX:Float = startX;
 		var curY:Int = startY;
@@ -1151,18 +1164,17 @@ class BitmapTextField extends Sprite
 		
 		var pos:Int = _drawData.length;
 		
-		var lineLength:Int = line.length;
+		var lineLength:Int = Utf8.length(line);
 		
 		for (i in 0...lineLength)
 		{
-			char = line.charAt(i);
-			charCode = char.charCodeAt(0);
+			charCode = Utf8.charCodeAt(line, i);
 			
-			if (char == ' ')
+			if (charCode == BitmapFont.spaceCode)
 			{
 				curX += spaceWidth;
 			}
-			else if (char == '\t')
+			else if (charCode == BitmapFont.tabCode)
 			{
 				curX += tabWidth;
 			}
