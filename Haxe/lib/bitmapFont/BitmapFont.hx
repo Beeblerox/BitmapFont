@@ -2,7 +2,7 @@ package bitmapFont;
 
 import haxe.Utf8;
 import haxe.xml.Fast;
-import openfl.display.Tilesheet;
+import openfl.display.Tileset;
 import openfl.display.BitmapData;
 import openfl.display.Graphics;
 import openfl.geom.ColorTransform;
@@ -11,7 +11,7 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 
 #if RENDER_TILE
-import openfl.display.Tilesheet;
+import openfl.display.Tileset;
 #end
 
 /**
@@ -172,7 +172,7 @@ class BitmapFont
 	public var glyphs:Map<Int, BitmapGlyphFrame>;
 	
 	#if RENDER_TILE
-	public var tilesheet:Tilesheet;
+	public var tilesheet:Tileset;
 	#end
 	
 	/**
@@ -183,7 +183,7 @@ class BitmapFont
 		this.bitmap = bitmap;
 		this.fontName = name;
 		#if RENDER_TILE
-		tilesheet = new Tilesheet(bitmap);
+		tilesheet = new Tileset(bitmap);
 		#end
 		glyphs = new Map<Int, BitmapGlyphFrame>();
 		BitmapFont.store(name, this);
@@ -536,7 +536,8 @@ class BitmapFont
 		glyphFrame.rect = frame;
 		
 		#if RENDER_TILE
-		glyphFrame.tileID = tilesheet.addTileRect(frame, new Point(0, 0));
+		//glyphFrame.tileID = tilesheet.addTileRect(frame, new Point(0, 0));
+		glyphFrame.tileID = tilesheet.addRect(frame);
 		#end
 		
 		glyphs.set(charCode, glyphFrame);
@@ -645,7 +646,7 @@ class BitmapGlyphCollection
 	
 	public var glyphs:Array<BitmapGlyph>;
 	
-	public var color:UInt;
+	public var color:Int;
 	
 	public var scale:Float;
 	
