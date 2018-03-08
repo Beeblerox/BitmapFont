@@ -13,6 +13,7 @@ import openfl.display.PixelSnapping;
 import openfl.display.Tile;
 import openfl.display.Tilemap;
 import openfl.display.Tileset;
+import openfl.geom.ColorTransform;
 
 /**
  * Class for rendering text with provided bitmap font and some additional options.
@@ -1156,12 +1157,11 @@ class BitmapTextField extends Sprite
 		var spaceWidth:Int = Std.int(font.spaceWidth * size);
 		var tabWidth:Int = Std.int(spaceWidth * numSpacesInTab);
 		
-		//var r:Float = ((color >> 16) & 0xFF) / 255;
-		//var g:Float = ((color >> 8) & 0xFF) / 255;
-		//var b:Float = (color & 0xFF) / 255;
+		var r:Float = ((color >> 16) & 0xFF) / 255;
+		var g:Float = ((color >> 8) & 0xFF) / 255;
+		var b:Float = (color & 0xFF) / 255;
 		//var a:Float = ((color >> 24) & 0xFF) / 255;
 		
-		//var pos:Int = _drawData.length;
 		var tile:Tile;
 		
 		var lineLength:Int = Utf8.length(line);
@@ -1185,20 +1185,13 @@ class BitmapTextField extends Sprite
 				{
 					//_tilemap.addTile(new Tile(glyph.tileID, curX + glyph.xoffset * size, curY + glyph.yoffset * size, size, size));
 					tile = new Tile(glyph.tileID, curX + glyph.xoffset * size, curY + glyph.yoffset * size, size, size);
-					tile.colorTransform.color = color;
+					//tile.colorTransform.color = color; // this colors everything the same : if you have a border it will get colored too
+					tile.colorTransform.redMultiplier = r;
+					tile.colorTransform.greenMultiplier = g;
+					tile.colorTransform.blueMultiplier = b;
+					tile.colorTransform = tile.colorTransform;
 					tile.alpha = alpha;
 					_tilemap.addTile(tile);
-					//_drawData[pos++] = curX + glyph.xoffset * size;
-					//_drawData[pos++] = curY + glyph.yoffset * size;
-					//
-					//_drawData[pos++] = glyph.tileID;
-					//
-					//_drawData[pos++] = size;
-					//
-					//_drawData[pos++] = r;
-					//_drawData[pos++] = g;
-					//_drawData[pos++] = b;
-					//_drawData[pos++] = a;
 					
 					curX += glyph.xadvance * size;
 				}				

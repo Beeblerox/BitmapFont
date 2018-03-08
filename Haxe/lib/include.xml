@@ -3,7 +3,7 @@
 	<haxelib name="openfl" />
 	
 	<!-- Allow this setting to be overridden on the command-line -->
-	<set name="RENDER_BLIT" if="flash || html5" unless="RENDER_TILE" />
+	<set name="RENDER_BLIT" if="flash" unless="RENDER_TILE" />
 	<set name="RENDER_TILE" unless="RENDER_BLIT" />
 	
 	<haxedef name="RENDER_BLIT" if="RENDER_BLIT" />
