@@ -1186,10 +1186,7 @@ class BitmapTextField extends Sprite
 					//_tilemap.addTile(new Tile(glyph.tileID, curX + glyph.xoffset * size, curY + glyph.yoffset * size, size, size));
 					tile = new Tile(glyph.tileID, curX + glyph.xoffset * size, curY + glyph.yoffset * size, size, size);
 					//tile.colorTransform.color = color; // this colors everything the same : if you have a border it will get colored too
-					tile.colorTransform.redMultiplier = r;
-					tile.colorTransform.greenMultiplier = g;
-					tile.colorTransform.blueMultiplier = b;
-					tile.colorTransform = tile.colorTransform;
+					tile.colorTransform = new ColorTransform(r, g, b);
 					tile.alpha = alpha;
 					_tilemap.addTile(tile);
 					
